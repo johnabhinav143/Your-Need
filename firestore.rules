@@ -1,0 +1,657 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Global Primitives
+    // -------------------------------------------------------------------------
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'johnabhinav143@gmail.com';
+    }
+
+    function isValidCategory(cat) {
+      return cat in [
+        'fan', 'ac', 'fridge', 'washing_machine', 'electrical',
+        'microwave', 'geyser', 'tv_electronics', 'water_purifier',
+        'plumbing', 'carpentry', 'other'
+      ];
+    }
+
+    function isValidPaymentMethod(pm) {
+      return pm in ['cash', 'upi_qr', 'card', 'bank_transfer', 'wallet'];
+    }
+
+    // -------------------------------------------------------------------------
+    // Entity Validation Blueprints
+    // -------------------------------------------------------------------------
+    function isValidUserProfile(data, userId) {
+      return data.keys().hasAll(['uid', 'displayName', 'role', 'neighborhood', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'role', 'neighborhood',
+          'countryCode', 'currencyCode', 'avatarUrl', 'createdAt', 'updatedAt'
+        ])
+        && data.uid is string && data.uid == userId && isValidId(data.uid)
+        && data.displayName is string && data.displayName.size() >= 2 && data.displayName.size() <= 60
+        && data.role is string && data.role in ['customer', 'technician', 'both']
+        && data.neighborhood is string && data.neighborhood.size() >= 2 && data.neighborhood.size() <= 80
+        && (!('countryCode' in data) || (data.countryCode is string && data.countryCode.size() >= 2 && data.countryCode.size() <= 5))
+        && (!('currencyCode' in data) || (data.currencyCode is string && data.currencyCode.size() >= 3 && data.currencyCode.size() <= 4))
+        && (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 500))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidUserPrivateContact(data, userId) {
+      return data.keys().hasAll(['uid', 'phone', 'streetAddress', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'phone', 'streetAddress', 'updatedAt'])
+        && data.uid is string && data.uid == userId && isValidId(data.uid)
+        && data.phone is string && data.phone.size() <= 30
+        && data.streetAddress is string && data.streetAddress.size() <= 180
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidLoginRecord(data, recordId) {
+      return data.keys().hasAll([
+        'uid', 'displayName', 'email', 'emailVerified', 'phone',
+        'accountType', 'organizationName', 'role', 'neighborhood',
+        'countryCode', 'loginCount', 'createdAt', 'lastLoginAt', 'updatedAt'
+      ])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'email', 'emailVerified', 'phone',
+          'accountType', 'organizationName', 'role', 'neighborhood',
+          'countryCode', 'loginCount', 'createdAt', 'lastLoginAt', 'updatedAt'
+        ])
+        && data.uid is string && data.uid == recordId && isValidId(data.uid)
+        && data.displayName is string && data.displayName.size() >= 2 && data.displayName.size() <= 60
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 120
+        && data.emailVerified is bool
+        && data.phone is string && data.phone.size() <= 30
+        && data.accountType is string && data.accountType in ['customer', 'technician', 'organization']
+        && data.organizationName is string && data.organizationName.size() <= 80
+        && data.role is string && data.role in ['customer', 'technician', 'both']
+        && data.neighborhood is string && data.neighborhood.size() >= 1 && data.neighborhood.size() <= 80
+        && data.countryCode is string && data.countryCode.size() >= 2 && data.countryCode.size() <= 5
+        && (data.loginCount is int || data.loginCount is float) && data.loginCount >= 1 && data.loginCount <= 1000000
+        && data.createdAt is timestamp
+        && data.lastLoginAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidTechnician(data, techId) {
+      return data.keys().hasAll([
+        'uid', 'displayName', 'neighborhood', 'countryCode', 'currencyCode',
+        'specialties', 'acceptedPayments', 'bio', 'visitFee', 'responseTimeMins',
+        'isAvailable', 'isPublic', 'ratingAvg', 'completedJobsCount', 'createdAt', 'updatedAt'
+      ])
+        && data.keys().hasOnly([
+          'uid', 'displayName', 'neighborhood', 'countryCode', 'currencyCode',
+          'specialties', 'acceptedPayments', 'spokenLanguages', 'bio',
+          'visitFee', 'responseTimeMins', 'isAvailable', 'isPublic',
+          'ratingAvg', 'completedJobsCount', 'avatarUrl',
+          'phoneVerified', 'verificationStatus', 'idType', 'idLast4',
+          'yearsExperience', 'serviceRadiusKm', 'createdAt', 'updatedAt'
+        ])
+        && data.uid is string && data.uid == techId && isValidId(data.uid)
+        && data.displayName is string && data.displayName.size() >= 2 && data.displayName.size() <= 60
+        && data.neighborhood is string && data.neighborhood.size() >= 2 && data.neighborhood.size() <= 80
+        && data.countryCode is string && data.countryCode.size() >= 2 && data.countryCode.size() <= 5
+        && data.currencyCode is string && data.currencyCode.size() >= 3 && data.currencyCode.size() <= 4
+        && data.specialties is list && data.specialties.size() >= 1 && data.specialties.size() <= 12
+        && data.specialties[0] is string && data.specialties[0].size() >= 2 && data.specialties[0].size() <= 60
+        && data.acceptedPayments is list && data.acceptedPayments.size() >= 1 && data.acceptedPayments.size() <= 6
+        && data.acceptedPayments[0] is string && isValidPaymentMethod(data.acceptedPayments[0])
+        && (!('spokenLanguages' in data) || (data.spokenLanguages is list && data.spokenLanguages.size() >= 1 && data.spokenLanguages.size() <= 6 && data.spokenLanguages[0] is string && data.spokenLanguages[0].size() <= 30))
+        && data.bio is string && data.bio.size() <= 400
+        && (data.visitFee is int || data.visitFee is float) && data.visitFee >= 0 && data.visitFee <= 10000000
+        && (data.responseTimeMins is int || data.responseTimeMins is float) && data.responseTimeMins >= 5 && data.responseTimeMins <= 240
+        && data.isAvailable is bool
+        && data.isPublic is bool
+        && (data.ratingAvg is int || data.ratingAvg is float) && data.ratingAvg >= 0 && data.ratingAvg <= 5
+        && (data.completedJobsCount is int || data.completedJobsCount is float) && data.completedJobsCount >= 0 && data.completedJobsCount <= 100000
+        && (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 500))
+        && (!('phoneVerified' in data) || data.phoneVerified is bool)
+        && (!('verificationStatus' in data) || (data.verificationStatus is string && data.verificationStatus in ['unverified', 'pending', 'verified']))
+        && (!('idType' in data) || (data.idType is string && data.idType.size() <= 40))
+        && (!('idLast4' in data) || (data.idLast4 is string && data.idLast4.size() <= 10))
+        && (!('yearsExperience' in data) || ((data.yearsExperience is int || data.yearsExperience is float) && data.yearsExperience >= 0 && data.yearsExperience <= 60))
+        && (!('serviceRadiusKm' in data) || ((data.serviceRadiusKm is int || data.serviceRadiusKm is float) && data.serviceRadiusKm >= 1 && data.serviceRadiusKm <= 100))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidRepairJob(data) {
+      return data.keys().hasAll([
+        'customerId', 'customerName', 'neighborhood', 'countryCode', 'currencyCode',
+        'applianceCategory', 'issueTitle', 'issueDescription', 'urgency', 'preferredSlot',
+        'estimatedBudget', 'paymentMethod', 'paymentStatus', 'status',
+        'targetTechnicianId', 'technicianId', 'technicianName', 'technicianEta',
+        'quotedFee', 'createdAt', 'updatedAt'
+      ])
+        && data.keys().hasOnly([
+          'customerId', 'customerName', 'neighborhood', 'countryCode', 'currencyCode',
+          'applianceCategory', 'issueTitle', 'issueDescription', 'urgency', 'preferredSlot',
+          'estimatedBudget', 'inspectionFee', 'priceApproved',
+          'paymentMethod', 'paymentStatus', 'status',
+          'targetTechnicianId', 'technicianId', 'technicianName', 'technicianEta',
+          'quotedFee', 'mediaUrl', 'mediaType', 'mediaLabel',
+          'workSummary', 'partsReplaced', 'warrantyDays', 'cancellationReason',
+          'createdAt', 'updatedAt'
+        ])
+        && data.customerId is string && isValidId(data.customerId)
+        && data.customerName is string && data.customerName.size() >= 2 && data.customerName.size() <= 60
+        && data.neighborhood is string && data.neighborhood.size() >= 2 && data.neighborhood.size() <= 80
+        && data.countryCode is string && data.countryCode.size() >= 2 && data.countryCode.size() <= 5
+        && data.currencyCode is string && data.currencyCode.size() >= 3 && data.currencyCode.size() <= 4
+        && data.applianceCategory is string && isValidCategory(data.applianceCategory)
+        && data.issueTitle is string && data.issueTitle.size() >= 4 && data.issueTitle.size() <= 100
+        && data.issueDescription is string && data.issueDescription.size() >= 5 && data.issueDescription.size() <= 500
+        && data.urgency is string && data.urgency in ['urgent_today', 'within_24h', 'flexible']
+        && data.preferredSlot is string && data.preferredSlot.size() >= 2 && data.preferredSlot.size() <= 60
+        && (data.estimatedBudget is int || data.estimatedBudget is float) && data.estimatedBudget >= 0 && data.estimatedBudget <= 10000000
+        && (!('inspectionFee' in data) || ((data.inspectionFee is int || data.inspectionFee is float) && data.inspectionFee >= 0 && data.inspectionFee <= 10000000))
+        && (!('priceApproved' in data) || data.priceApproved is bool)
+        && data.paymentMethod is string && isValidPaymentMethod(data.paymentMethod)
+        && data.paymentStatus is string && data.paymentStatus in ['pending', 'paid']
+        && data.status is string && data.status in ['open', 'accepted', 'en_route', 'arrived', 'in_progress', 'completed', 'cancelled', 'rejected']
+        && data.targetTechnicianId is string && (data.targetTechnicianId == '' || isValidId(data.targetTechnicianId))
+        && data.technicianId is string && (data.technicianId == '' || isValidId(data.technicianId))
+        && data.technicianName is string && data.technicianName.size() <= 60
+        && data.technicianEta is string && data.technicianEta.size() <= 60
+        && (data.quotedFee is int || data.quotedFee is float) && data.quotedFee >= 0 && data.quotedFee <= 10000000
+        && (!('mediaUrl' in data) || (data.mediaUrl is string && data.mediaUrl.size() <= 240000))
+        && (!('mediaType' in data) || (data.mediaType is string && data.mediaType in ['none', 'image', 'video']))
+        && (!('mediaLabel' in data) || (data.mediaLabel is string && data.mediaLabel.size() <= 120))
+        && (!('workSummary' in data) || (data.workSummary is string && data.workSummary.size() <= 400))
+        && (!('partsReplaced' in data) || (data.partsReplaced is string && data.partsReplaced.size() <= 250))
+        && (!('warrantyDays' in data) || ((data.warrantyDays is int || data.warrantyDays is float) && data.warrantyDays >= 0 && data.warrantyDays <= 1825))
+        && (!('cancellationReason' in data) || (data.cancellationReason is string && data.cancellationReason.size() <= 200))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidJobContact(data) {
+      return data.keys().hasAll(['customerId', 'phone', 'streetAddress', 'accessNote', 'updatedAt'])
+        && data.keys().hasOnly(['customerId', 'phone', 'streetAddress', 'accessNote', 'updatedAt'])
+        && data.customerId is string && isValidId(data.customerId)
+        && data.phone is string && data.phone.size() >= 5 && data.phone.size() <= 30
+        && data.streetAddress is string && data.streetAddress.size() >= 5 && data.streetAddress.size() <= 180
+        && data.accessNote is string && data.accessNote.size() <= 200
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidJobTechContact(data) {
+      return data.keys().hasAll(['technicianId', 'phone', 'updatedAt'])
+        && data.keys().hasOnly(['technicianId', 'phone', 'updatedAt'])
+        && data.technicianId is string && isValidId(data.technicianId)
+        && data.phone is string && data.phone.size() >= 5 && data.phone.size() <= 30
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidJobMessage(data) {
+      return data.keys().hasAll(['senderId', 'senderName', 'senderRole', 'customerId', 'technicianId', 'text', 'createdAt'])
+        && data.keys().hasOnly(['senderId', 'senderName', 'senderRole', 'customerId', 'technicianId', 'text', 'createdAt'])
+        && data.senderId is string && isValidId(data.senderId)
+        && data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 60
+        && data.senderRole is string && data.senderRole in ['customer', 'technician']
+        && data.customerId is string && isValidId(data.customerId)
+        && data.technicianId is string && isValidId(data.technicianId)
+        && data.text is string && data.text.size() >= 1 && data.text.size() <= 500
+        && data.createdAt is timestamp;
+    }
+
+    function isValidReview(data, reviewId) {
+      return data.keys().hasAll(['jobId', 'customerId', 'customerName', 'technicianId', 'applianceCategory', 'rating', 'comment', 'createdAt'])
+        && data.keys().hasOnly(['jobId', 'customerId', 'customerName', 'technicianId', 'applianceCategory', 'rating', 'comment', 'createdAt'])
+        && data.jobId is string && data.jobId == reviewId && isValidId(data.jobId)
+        && data.customerId is string && isValidId(data.customerId)
+        && data.customerName is string && data.customerName.size() >= 2 && data.customerName.size() <= 60
+        && data.technicianId is string && isValidId(data.technicianId)
+        && data.applianceCategory is string && isValidCategory(data.applianceCategory)
+        && (data.rating is int || data.rating is float) && data.rating >= 1 && data.rating <= 5
+        && data.comment is string && data.comment.size() >= 2 && data.comment.size() <= 400
+        && data.createdAt is timestamp;
+    }
+
+    function isValidReport(data) {
+      return data.keys().hasAll([
+        'reporterId', 'reporterName', 'targetType', 'targetId', 'targetName',
+        'reason', 'details', 'status', 'adminNote', 'createdAt', 'updatedAt'
+      ])
+        && data.keys().hasOnly([
+          'reporterId', 'reporterName', 'targetType', 'targetId', 'targetName',
+          'reason', 'details', 'status', 'adminNote', 'createdAt', 'updatedAt'
+        ])
+        && data.reporterId is string && isValidId(data.reporterId)
+        && data.reporterName is string && data.reporterName.size() >= 1 && data.reporterName.size() <= 60
+        && data.targetType is string && data.targetType in ['technician', 'job', 'user']
+        && data.targetId is string && data.targetId.size() >= 1 && data.targetId.size() <= 128
+        && data.targetName is string && data.targetName.size() >= 1 && data.targetName.size() <= 80
+        && data.reason is string && data.reason in ['suspicious_account', 'pricing_dispute', 'poor_quality', 'no_show', 'safety_concern', 'other']
+        && data.details is string && data.details.size() >= 5 && data.details.size() <= 500
+        && data.status is string && data.status in ['open', 'investigating', 'resolved', 'dismissed']
+        && data.adminNote is string && data.adminNote.size() <= 300
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidNotification(data) {
+      return data.keys().hasAll(['recipientId', 'senderId', 'jobId', 'title', 'body', 'type', 'read', 'createdAt'])
+        && data.keys().hasOnly(['recipientId', 'senderId', 'jobId', 'title', 'body', 'type', 'read', 'createdAt'])
+        && data.recipientId is string && isValidId(data.recipientId)
+        && data.senderId is string && isValidId(data.senderId)
+        && data.jobId is string && data.jobId.size() <= 128
+        && data.title is string && data.title.size() >= 2 && data.title.size() <= 100
+        && data.body is string && data.body.size() >= 2 && data.body.size() <= 250
+        && data.type is string && data.type in ['booking', 'status', 'quote', 'payment', 'system']
+        && data.read is bool
+        && data.createdAt is timestamp;
+    }
+
+    // -------------------------------------------------------------------------
+    // Collection Rules
+    // -------------------------------------------------------------------------
+    match /users/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isVerifiedUser()
+        && isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser()
+        && isValidId(userId)
+        && isOwner(userId)
+        && isValidUserProfile(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'role', 'neighborhood', 'countryCode', 'currencyCode', 'avatarUrl', 'updatedAt'
+        ]);
+      allow delete: if false;
+
+      match /private/contact {
+        allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+        allow list: if false;
+        allow create: if isVerifiedUser()
+          && isValidId(userId)
+          && isOwner(userId)
+          && isValidUserPrivateContact(incoming(), userId)
+          && incoming().updatedAt == request.time;
+        allow update: if isVerifiedUser()
+          && isValidId(userId)
+          && isOwner(userId)
+          && isValidUserPrivateContact(incoming(), userId)
+          && incoming().uid == existing().uid
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly(['phone', 'streetAddress', 'updatedAt']);
+        allow delete: if false;
+      }
+    }
+
+    match /login_records/{recordId} {
+      allow get: if isValidId(recordId) && (isOwner(recordId) || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isVerifiedUser()
+        && isValidId(recordId)
+        && isOwner(recordId)
+        && isValidLoginRecord(incoming(), recordId)
+        && incoming().email == request.auth.token.email
+        && incoming().emailVerified == true
+        && incoming().loginCount == 1
+        && incoming().createdAt == request.time
+        && incoming().lastLoginAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser()
+        && isValidId(recordId)
+        && isOwner(recordId)
+        && isValidLoginRecord(incoming(), recordId)
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().email == request.auth.token.email
+        && incoming().emailVerified == true
+        && incoming().loginCount >= existing().loginCount
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'displayName', 'email', 'emailVerified', 'phone',
+          'accountType', 'organizationName', 'role', 'neighborhood',
+          'countryCode', 'loginCount', 'lastLoginAt', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    match /technicians/{techId} {
+      allow get: if isValidId(techId) && (existing().isPublic == true || isOwner(techId) || isAdmin());
+      allow list: if resource.data.isPublic == true
+        || (isSignedIn() && resource.data.uid == request.auth.uid)
+        || isAdmin();
+      allow create: if isVerifiedUser()
+        && isValidId(techId)
+        && isOwner(techId)
+        && isValidTechnician(incoming(), techId)
+        && incoming().ratingAvg == 0
+        && incoming().completedJobsCount == 0
+        && (!('verificationStatus' in incoming()) || incoming().verificationStatus in ['unverified', 'pending'])
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser()
+        && isValidId(techId)
+        && isValidTechnician(incoming(), techId)
+        && incoming().uid == existing().uid
+        && incoming().ratingAvg == existing().ratingAvg
+        && incoming().completedJobsCount == existing().completedJobsCount
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          (
+            isOwner(techId)
+            && (!('verificationStatus' in incoming()) || incoming().verificationStatus in ['unverified', 'pending'] || (('verificationStatus' in existing()) && incoming().verificationStatus == existing().verificationStatus))
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'displayName', 'neighborhood', 'countryCode', 'currencyCode',
+              'specialties', 'acceptedPayments', 'spokenLanguages', 'bio',
+              'visitFee', 'responseTimeMins', 'isAvailable', 'isPublic',
+              'avatarUrl', 'phoneVerified', 'verificationStatus', 'idType',
+              'idLast4', 'yearsExperience', 'serviceRadiusKm', 'updatedAt'
+            ])
+          )
+          ||
+          (
+            isAdmin()
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'verificationStatus', 'isPublic', 'updatedAt'
+            ])
+          )
+        );
+      allow delete: if false;
+    }
+
+    match /repair_jobs/{jobId} {
+      allow get: if isValidId(jobId) && (
+        existing().status == 'open'
+        || (isSignedIn() && (existing().customerId == request.auth.uid || existing().technicianId == request.auth.uid))
+        || isAdmin()
+      );
+      allow list: if resource.data.status == 'open'
+        || (isSignedIn() && (resource.data.customerId == request.auth.uid || resource.data.technicianId == request.auth.uid))
+        || isAdmin();
+
+      allow create: if isVerifiedUser()
+        && isValidId(jobId)
+        && isValidRepairJob(incoming())
+        && incoming().customerId == request.auth.uid
+        && incoming().status == 'open'
+        && incoming().paymentStatus == 'pending'
+        && incoming().technicianId == ''
+        && incoming().technicianName == ''
+        && incoming().technicianEta == ''
+        && incoming().quotedFee == 0
+        && (!('priceApproved' in incoming()) || incoming().priceApproved == false)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser()
+        && isValidId(jobId)
+        && isValidRepairJob(incoming())
+        && incoming().customerId == existing().customerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && existing().status != 'completed'
+        && existing().status != 'cancelled'
+        && (
+          // Action 1: Customer edits open job details or payment method
+          (
+            existing().customerId == request.auth.uid
+            && existing().status == 'open'
+            && incoming().status == 'open'
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'issueTitle', 'issueDescription', 'urgency', 'preferredSlot',
+              'estimatedBudget', 'neighborhood', 'paymentMethod', 'updatedAt'
+            ])
+          )
+          ||
+          // Action 2: Customer cancels before repair starts
+          (
+            existing().customerId == request.auth.uid
+            && existing().status in ['open', 'accepted', 'en_route', 'arrived']
+            && incoming().status == 'cancelled'
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'cancellationReason', 'updatedAt'])
+          )
+          ||
+          // Action 2b: Customer re-opens a rejected direct request for nearby technicians
+          (
+            existing().customerId == request.auth.uid
+            && existing().status == 'rejected'
+            && incoming().status == 'open'
+            && incoming().targetTechnicianId == ''
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'targetTechnicianId', 'cancellationReason', 'updatedAt'])
+          )
+          ||
+          // Action 3: Customer approves quoted final price
+          (
+            existing().customerId == request.auth.uid
+            && existing().status in ['accepted', 'en_route', 'arrived', 'in_progress']
+            && incoming().status == existing().status
+            && incoming().priceApproved == true
+            && incoming().diff(existing()).affectedKeys().hasOnly(['priceApproved', 'updatedAt'])
+          )
+          ||
+          // Action 3b: Customer marks payment settled during active repair
+          (
+            existing().customerId == request.auth.uid
+            && existing().status in ['accepted', 'en_route', 'arrived', 'in_progress']
+            && incoming().status == existing().status
+            && incoming().paymentStatus == 'paid'
+            && incoming().diff(existing()).affectedKeys().hasOnly(['paymentMethod', 'paymentStatus', 'updatedAt'])
+          )
+          ||
+          // Action 4: Registered technician accepts an open job
+          (
+            existing().status == 'open'
+            && existing().customerId != request.auth.uid
+            && (existing().targetTechnicianId == '' || existing().targetTechnicianId == request.auth.uid)
+            && incoming().status == 'accepted'
+            && incoming().technicianId == request.auth.uid
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'status', 'technicianId', 'technicianName', 'technicianEta', 'quotedFee', 'inspectionFee', 'priceApproved', 'updatedAt'
+            ])
+            && exists(/databases/$(database)/documents/technicians/$(request.auth.uid))
+          )
+          ||
+          // Action 4b: Targeted technician rejects a direct job request
+          (
+            existing().status == 'open'
+            && existing().targetTechnicianId == request.auth.uid
+            && incoming().status == 'rejected'
+            && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'cancellationReason', 'updatedAt'])
+            && exists(/databases/$(database)/documents/technicians/$(request.auth.uid))
+          )
+          ||
+          // Action 5: Assigned technician advances workflow state, updates quote/ETA & records invoice summary
+          (
+            existing().technicianId == request.auth.uid
+            && (
+              (existing().status == 'accepted' && incoming().status in ['accepted', 'en_route', 'arrived', 'in_progress', 'completed'])
+              || (existing().status == 'en_route' && incoming().status in ['en_route', 'arrived', 'in_progress', 'completed'])
+              || (existing().status == 'arrived' && incoming().status in ['arrived', 'in_progress', 'completed'])
+              || (existing().status == 'in_progress' && incoming().status in ['in_progress', 'completed'])
+            )
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'status', 'technicianEta', 'quotedFee', 'inspectionFee', 'priceApproved',
+              'paymentStatus', 'workSummary', 'partsReplaced', 'warrantyDays', 'updatedAt'
+            ])
+          )
+        );
+
+      allow delete: if false;
+
+      match /private/contact {
+        allow get: if isValidId(jobId) && (
+          (isSignedIn() && (
+            get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.customerId == request.auth.uid
+            || get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.technicianId == request.auth.uid
+          ))
+          || isAdmin()
+        );
+        allow list: if false;
+        allow create: if isVerifiedUser()
+          && isValidId(jobId)
+          && isValidJobContact(incoming())
+          && incoming().customerId == request.auth.uid
+          && incoming().updatedAt == request.time
+          && get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.customerId == request.auth.uid;
+        allow update: if isVerifiedUser()
+          && isValidId(jobId)
+          && isValidJobContact(incoming())
+          && incoming().customerId == existing().customerId
+          && incoming().updatedAt == request.time
+          && get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.customerId == request.auth.uid
+          && incoming().diff(existing()).affectedKeys().hasOnly(['phone', 'streetAddress', 'accessNote', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /private/tech_contact {
+        allow get: if isValidId(jobId) && (
+          (isSignedIn() && (
+            get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.customerId == request.auth.uid
+            || get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.technicianId == request.auth.uid
+          ))
+          || isAdmin()
+        );
+        allow list: if false;
+        allow create: if isVerifiedUser()
+          && isValidId(jobId)
+          && isValidJobTechContact(incoming())
+          && incoming().technicianId == request.auth.uid
+          && incoming().updatedAt == request.time
+          && get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.technicianId == request.auth.uid;
+        allow update: if isVerifiedUser()
+          && isValidId(jobId)
+          && isValidJobTechContact(incoming())
+          && incoming().technicianId == existing().technicianId
+          && incoming().updatedAt == request.time
+          && get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.technicianId == request.auth.uid
+          && incoming().diff(existing()).affectedKeys().hasOnly(['phone', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /messages/{messageId} {
+        allow get: if isSignedIn()
+          && isValidId(jobId)
+          && isValidId(messageId)
+          && (
+            existing().customerId == request.auth.uid
+            || existing().technicianId == request.auth.uid
+          );
+        allow list: if isSignedIn()
+          && (
+            resource.data.customerId == request.auth.uid
+            || resource.data.technicianId == request.auth.uid
+          );
+        allow create: if isVerifiedUser()
+          && isValidId(jobId)
+          && isValidId(messageId)
+          && isValidJobMessage(incoming())
+          && incoming().senderId == request.auth.uid
+          && incoming().createdAt == request.time
+          && get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.customerId == incoming().customerId
+          && get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.technicianId == incoming().technicianId
+          && get(/databases/$(database)/documents/repair_jobs/$(jobId)).data.status in ['accepted', 'en_route', 'arrived', 'in_progress', 'completed']
+          && (
+            (incoming().senderRole == 'customer' && incoming().customerId == request.auth.uid)
+            || (incoming().senderRole == 'technician' && incoming().technicianId == request.auth.uid)
+          );
+        allow update, delete: if false;
+      }
+    }
+
+    match /reviews/{reviewId} {
+      allow get: if isValidId(reviewId);
+      allow list: if resource.data.rating >= 1;
+      allow create: if isVerifiedUser()
+        && isValidId(reviewId)
+        && isValidReview(incoming(), reviewId)
+        && incoming().customerId == request.auth.uid
+        && incoming().createdAt == request.time
+        && get(/databases/$(database)/documents/repair_jobs/$(reviewId)).data.customerId == request.auth.uid
+        && get(/databases/$(database)/documents/repair_jobs/$(reviewId)).data.technicianId == incoming().technicianId
+        && get(/databases/$(database)/documents/repair_jobs/$(reviewId)).data.status == 'completed';
+      allow update, delete: if false;
+    }
+
+    match /reports/{reportId} {
+      allow get: if isValidId(reportId) && (
+        (isSignedIn() && existing().reporterId == request.auth.uid)
+        || isAdmin()
+      );
+      allow list: if (isSignedIn() && resource.data.reporterId == request.auth.uid) || isAdmin();
+      allow create: if isVerifiedUser()
+        && isValidId(reportId)
+        && isValidReport(incoming())
+        && incoming().reporterId == request.auth.uid
+        && incoming().status == 'open'
+        && incoming().adminNote == ''
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(reportId)
+        && isValidReport(incoming())
+        && incoming().reporterId == existing().reporterId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'adminNote', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    match /notifications/{notifId} {
+      allow get: if isValidId(notifId) && isSignedIn() && existing().recipientId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.recipientId == request.auth.uid;
+      allow create: if isVerifiedUser()
+        && isValidId(notifId)
+        && isValidNotification(incoming())
+        && incoming().senderId == request.auth.uid
+        && incoming().read == false
+        && incoming().createdAt == request.time;
+      allow update: if isVerifiedUser()
+        && isValidId(notifId)
+        && isSignedIn()
+        && existing().recipientId == request.auth.uid
+        && isValidNotification(incoming())
+        && incoming().recipientId == existing().recipientId
+        && incoming().senderId == existing().senderId
+        && incoming().createdAt == existing().createdAt
+        && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
+      allow delete: if false;
+    }
+  }
+}

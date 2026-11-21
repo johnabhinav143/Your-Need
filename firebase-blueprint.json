@@ -1,0 +1,784 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Account metadata, region preference, and active marketplace role for a Your Need member.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        },
+        "role": {
+          "type": "string",
+          "enum": ["customer", "technician", "both"]
+        },
+        "neighborhood": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "countryCode": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 5
+        },
+        "currencyCode": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 4
+        },
+        "avatarUrl": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "displayName", "role", "neighborhood", "createdAt", "updatedAt"]
+    },
+    "UserPrivateContact": {
+      "title": "UserPrivateContact",
+      "description": "Private PII contact information isolated from public user documents.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 30
+        },
+        "streetAddress": {
+          "type": "string",
+          "maxLength": 180
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "phone", "streetAddress", "updatedAt"]
+    },
+    "TechnicianProfile": {
+      "title": "TechnicianProfile",
+      "description": "Public directory card for a home appliance and repair technician worldwide, including verification status and experience.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        },
+        "neighborhood": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "countryCode": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 5
+        },
+        "currencyCode": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 4
+        },
+        "specialties": {
+          "type": "array",
+          "description": "Up to 12 repair categories."
+        },
+        "acceptedPayments": {
+          "type": "array",
+          "description": "Accepted payment methods (cash, upi_qr, card, bank_transfer, wallet)."
+        },
+        "spokenLanguages": {
+          "type": "array",
+          "description": "Languages spoken by the technician."
+        },
+        "bio": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "visitFee": {
+          "type": "number"
+        },
+        "responseTimeMins": {
+          "type": "number"
+        },
+        "isAvailable": {
+          "type": "boolean"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "ratingAvg": {
+          "type": "number"
+        },
+        "completedJobsCount": {
+          "type": "number"
+        },
+        "avatarUrl": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "phoneVerified": {
+          "type": "boolean"
+        },
+        "verificationStatus": {
+          "type": "string",
+          "enum": ["unverified", "pending", "verified"]
+        },
+        "idType": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "idLast4": {
+          "type": "string",
+          "maxLength": 10
+        },
+        "yearsExperience": {
+          "type": "number"
+        },
+        "serviceRadiusKm": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "displayName",
+        "neighborhood",
+        "countryCode",
+        "currencyCode",
+        "specialties",
+        "acceptedPayments",
+        "bio",
+        "visitFee",
+        "responseTimeMins",
+        "isAvailable",
+        "isPublic",
+        "ratingAvg",
+        "completedJobsCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "RepairJob": {
+      "title": "RepairJob",
+      "description": "A home repair request linking a homeowner and a technician globally with pricing transparency, tracking, media preview, and invoice records.",
+      "type": "object",
+      "properties": {
+        "customerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "customerName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        },
+        "neighborhood": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "countryCode": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 5
+        },
+        "currencyCode": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 4
+        },
+        "applianceCategory": {
+          "type": "string",
+          "enum": [
+            "fan",
+            "ac",
+            "fridge",
+            "washing_machine",
+            "electrical",
+            "microwave",
+            "geyser",
+            "tv_electronics",
+            "water_purifier",
+            "plumbing",
+            "carpentry",
+            "other"
+          ]
+        },
+        "issueTitle": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 100
+        },
+        "issueDescription": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 500
+        },
+        "urgency": {
+          "type": "string",
+          "enum": ["urgent_today", "within_24h", "flexible"]
+        },
+        "preferredSlot": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        },
+        "estimatedBudget": {
+          "type": "number"
+        },
+        "inspectionFee": {
+          "type": "number"
+        },
+        "priceApproved": {
+          "type": "boolean"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["cash", "upi_qr", "card", "bank_transfer", "wallet"]
+        },
+        "paymentStatus": {
+          "type": "string",
+          "enum": ["pending", "paid"]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "open",
+            "accepted",
+            "en_route",
+            "arrived",
+            "in_progress",
+            "completed",
+            "cancelled",
+            "rejected"
+          ]
+        },
+        "targetTechnicianId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "technicianId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "technicianName": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "technicianEta": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "quotedFee": {
+          "type": "number"
+        },
+        "mediaUrl": {
+          "type": "string",
+          "maxLength": 240000
+        },
+        "mediaType": {
+          "type": "string",
+          "enum": ["none", "image", "video"]
+        },
+        "mediaLabel": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "workSummary": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "partsReplaced": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "warrantyDays": {
+          "type": "number"
+        },
+        "cancellationReason": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "customerId",
+        "customerName",
+        "neighborhood",
+        "countryCode",
+        "currencyCode",
+        "applianceCategory",
+        "issueTitle",
+        "issueDescription",
+        "urgency",
+        "preferredSlot",
+        "estimatedBudget",
+        "paymentMethod",
+        "paymentStatus",
+        "status",
+        "targetTechnicianId",
+        "technicianId",
+        "technicianName",
+        "technicianEta",
+        "quotedFee",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "JobPrivateContact": {
+      "title": "JobPrivateContact",
+      "description": "Isolated PII customer contact and address for a repair job.",
+      "type": "object",
+      "properties": {
+        "customerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 30
+        },
+        "streetAddress": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 180
+        },
+        "accessNote": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["customerId", "phone", "streetAddress", "accessNote", "updatedAt"]
+    },
+    "JobTechPrivateContact": {
+      "title": "JobTechPrivateContact",
+      "description": "Isolated technician phone shared strictly with the homeowner once a job is matched.",
+      "type": "object",
+      "properties": {
+        "technicianId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "phone": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 30
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["technicianId", "phone", "updatedAt"]
+    },
+    "JobMessage": {
+      "title": "JobMessage",
+      "description": "Direct coordination message between homeowner and assigned technician on a job.",
+      "type": "object",
+      "properties": {
+        "senderId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "senderName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "senderRole": {
+          "type": "string",
+          "enum": ["customer", "technician"]
+        },
+        "customerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "technicianId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["senderId", "senderName", "senderRole", "customerId", "technicianId", "text", "createdAt"]
+    },
+    "Review": {
+      "title": "Review",
+      "description": "Verified rating and feedback submitted by a homeowner after job completion.",
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "customerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "customerName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        },
+        "technicianId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "applianceCategory": {
+          "type": "string",
+          "enum": [
+            "fan",
+            "ac",
+            "fridge",
+            "washing_machine",
+            "electrical",
+            "microwave",
+            "geyser",
+            "tv_electronics",
+            "water_purifier",
+            "plumbing",
+            "carpentry",
+            "other"
+          ]
+        },
+        "rating": {
+          "type": "number"
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 400
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["jobId", "customerId", "customerName", "technicianId", "applianceCategory", "rating", "comment", "createdAt"]
+    },
+    "ReportComplaint": {
+      "title": "ReportComplaint",
+      "description": "User-submitted report or complaint about suspicious accounts, pricing disputes, or repair quality.",
+      "type": "object",
+      "properties": {
+        "reporterId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "reporterName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60
+        },
+        "targetType": {
+          "type": "string",
+          "enum": ["technician", "job", "user"]
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "targetName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "suspicious_account",
+            "pricing_dispute",
+            "poor_quality",
+            "no_show",
+            "safety_concern",
+            "other"
+          ]
+        },
+        "details": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 500
+        },
+        "status": {
+          "type": "string",
+          "enum": ["open", "investigating", "resolved", "dismissed"]
+        },
+        "adminNote": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "reporterId",
+        "reporterName",
+        "targetType",
+        "targetId",
+        "targetName",
+        "reason",
+        "details",
+        "status",
+        "adminNote",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AppNotification": {
+      "title": "AppNotification",
+      "description": "Real-time activity notification for bookings, status changes, price approvals, and payments.",
+      "type": "object",
+      "properties": {
+        "recipientId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "senderId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "jobId": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "body": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 250
+        },
+        "type": {
+          "type": "string",
+          "enum": ["booking", "status", "quote", "payment", "system"]
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["recipientId", "senderId", "jobId", "title", "body", "type", "read", "createdAt"]
+    },
+    "LoginRecord": {
+      "title": "LoginRecord",
+      "description": "Verified login identity, email, phone number, organization/customer classification, and sign-in counter restricted to the owner and admin.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "emailVerified": {
+          "type": "boolean"
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 30
+        },
+        "accountType": {
+          "type": "string",
+          "enum": ["customer", "technician", "organization"]
+        },
+        "organizationName": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "role": {
+          "type": "string",
+          "enum": ["customer", "technician", "both"]
+        },
+        "neighborhood": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "countryCode": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 5
+        },
+        "loginCount": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastLoginAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "uid",
+        "displayName",
+        "email",
+        "emailVerified",
+        "phone",
+        "accountType",
+        "organizationName",
+        "role",
+        "neighborhood",
+        "countryCode",
+        "loginCount",
+        "createdAt",
+        "lastLoginAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Account metadata owned exclusively by the user (and readable by admin)."
+    },
+    "/users/{userId}/private/contact": {
+      "schema": { "$ref": "#/entities/UserPrivateContact" },
+      "description": "Private PII contact details isolated per user (readable by owner and admin)."
+    },
+    "/login_records/{recordId}": {
+      "schema": { "$ref": "#/entities/LoginRecord" },
+      "description": "Private directory of logged-in persons, verified emails, phone numbers, and organization tags strictly readable by owner and verified admin."
+    },
+    "/technicians/{techId}": {
+      "schema": { "$ref": "#/entities/TechnicianProfile" },
+      "description": "Public directory profiles for home repair technicians (no PII)."
+    },
+    "/repair_jobs/{jobId}": {
+      "schema": { "$ref": "#/entities/RepairJob" },
+      "description": "Active and open repair job requests (no PII)."
+    },
+    "/repair_jobs/{jobId}/private/contact": {
+      "schema": { "$ref": "#/entities/JobPrivateContact" },
+      "description": "Private homeowner address and phone for a job, gated to customer, assigned technician, and admin."
+    },
+    "/repair_jobs/{jobId}/private/tech_contact": {
+      "schema": { "$ref": "#/entities/JobTechPrivateContact" },
+      "description": "Private technician phone for a job, gated to customer and assigned technician."
+    },
+    "/repair_jobs/{jobId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/JobMessage" },
+      "description": "Coordination chat messages between customer and assigned technician."
+    },
+    "/reviews/{reviewId}": {
+      "schema": { "$ref": "#/entities/Review" },
+      "description": "Verified reviews tied 1:1 to completed repair jobs."
+    },
+    "/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/ReportComplaint" },
+      "description": "Complaints and suspicious account reports managed by admin."
+    },
+    "/notifications/{notifId}": {
+      "schema": { "$ref": "#/entities/AppNotification" },
+      "description": "Private real-time notifications delivered to a recipient user."
+    }
+  }
+}

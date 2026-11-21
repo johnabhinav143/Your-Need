@@ -1,0 +1,6 @@
+{
+  "name": "MendLocal",
+  "description": "Connect homeowners needing fast fan, AC, fridge, and electrical appliance repairs with available local technicians.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
