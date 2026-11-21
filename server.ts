@@ -1,20 +1,50 @@
 import dotenv from 'dotenv';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import http from 'http';
 import path from 'path';
-import { GoogleGenAI, Type } from '@google/genai';
+import OpenAI, {
+  APIConnectionError,
+  APIConnectionTimeoutError,
+  APIError,
+  AuthenticationError,
+  PermissionDeniedError,
+  RateLimitError,
+} from 'openai';
+import type { EasyInputMessage } from 'openai/resources/responses/responses';
 
 dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+const DEFAULT_OPENAI_MODEL = 'gpt-4.1-mini';
+const MAX_MESSAGE_LENGTH = 500;
+const MAX_HISTORY_ITEMS = 10;
+const MAX_HISTORY_TEXT_LENGTH = 800;
+const OPENAI_TIMEOUT_MS = 25_000;
 
-app.use(express.json({ limit: '1mb' }));
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX_REQUESTS = 20;
+const MAX_TRACKED_IPS = 2000;
+const rateLimitStore = new Map<string, number[]>();
+
+app.use(express.json({ limit: '64kb' }));
+
+app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+  if (err && typeof err === 'object' && 'type' in err && (err as { type?: string }).type === 'entity.too.large') {
+    res.status(413).json({ error: 'Request payload is too large. Please shorten your message.' });
+    return;
+  }
+  if (err instanceof SyntaxError && 'status' in err && (err as { status?: number }).status === 400) {
+    res.status(400).json({ error: 'Invalid JSON request body.' });
+    return;
+  }
+  next(err);
+});
 
 interface AssistantTurn {
-  role: 'user' | 'model';
-  text: string;
+  role?: string;
+  text?: string;
 }
 
 const VALID_CATEGORIES = [
@@ -32,124 +62,235 @@ const VALID_CATEGORIES = [
   'other',
 ] as const;
 
-app.post('/api/assistant', async (req, res) => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    res.status(503).json({
-      error:
-        'AI Assistant is not configured yet. Please add GEMINI_API_KEY in Settings > Secrets.',
+function sanitizeContextValue(value: unknown, fallback: string, maxLen = 48): string {
+  if (typeof value !== 'string') return fallback;
+  const cleaned = value.replace(/[\r\n\t]+/g, ' ').trim().slice(0, maxLen);
+  return cleaned || fallback;
+}
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string' && forwarded.trim()) {
+    return forwarded.split(',')[0].trim().slice(0, 64);
+  }
+  return (req.ip || req.socket.remoteAddress || 'unknown').slice(0, 64);
+}
+
+function checkRateLimit(clientIp: string): { allowed: boolean; retryAfterSec: number } {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+
+  if (rateLimitStore.size > MAX_TRACKED_IPS) {
+    for (const [ip, timestamps] of rateLimitStore.entries()) {
+      const recent = timestamps.filter((t) => t > windowStart);
+      if (recent.length === 0) {
+        rateLimitStore.delete(ip);
+      } else {
+        rateLimitStore.set(ip, recent);
+      }
+      if (rateLimitStore.size <= MAX_TRACKED_IPS / 2) break;
+    }
+  }
+
+  const existing = (rateLimitStore.get(clientIp) || []).filter((t) => t > windowStart);
+  if (existing.length >= RATE_LIMIT_MAX_REQUESTS) {
+    const oldestInWindow = existing[0] ?? now;
+    const retryAfterSec = Math.max(1, Math.ceil((oldestInWindow + RATE_LIMIT_WINDOW_MS - now) / 1000));
+    rateLimitStore.set(clientIp, existing);
+    return { allowed: false, retryAfterSec };
+  }
+
+  existing.push(now);
+  rateLimitStore.set(clientIp, existing);
+  return { allowed: true, retryAfterSec: 0 };
+}
+
+const ASSISTANT_RESPONSE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    reply: {
+      type: 'string',
+      description:
+        'Clear, polite, helpful response as YourNeed AI Assistant in the requested user language.',
+    },
+    shouldSuggestBooking: {
+      type: 'boolean',
+      description:
+        'True only when the user wants to book a repair/service or find a technician (e.g. electrician, AC technician, broken appliance). False for general questions or technician registration queries.',
+    },
+    suggestedCategory: {
+      type: 'string',
+      enum: [...VALID_CATEGORIES],
+      description: 'Best matching YourNeed service category.',
+    },
+    suggestedTitle: {
+      type: 'string',
+      description: 'Concise booking headline (max 90 chars) if shouldSuggestBooking is true, otherwise empty string.',
+    },
+    suggestedDescription: {
+      type: 'string',
+      description: 'Concise problem summary for a technician (max 300 chars) if shouldSuggestBooking is true, otherwise empty string.',
+    },
+    suggestedUrgency: {
+      type: 'string',
+      enum: ['urgent_today', 'within_24h', 'flexible'],
+      description: 'Urgency level for a booking request.',
+    },
+    safetyWarning: {
+      type: ['string', 'null'],
+      description:
+        'Short electrical/gas/appliance safety reminder ONLY when discussing electrical, AC, gas, water-heater, or appliance repairs; otherwise null.',
+    },
+  },
+  required: [
+    'reply',
+    'shouldSuggestBooking',
+    'suggestedCategory',
+    'suggestedTitle',
+    'suggestedDescription',
+    'suggestedUrgency',
+    'safetyWarning',
+  ],
+} as const;
+
+app.post('/api/assistant', async (req: Request, res: Response) => {
+  const clientIp = getClientIp(req);
+  const rateCheck = checkRateLimit(clientIp);
+  if (!rateCheck.allowed) {
+    res.setHeader('Retry-After', String(rateCheck.retryAfterSec));
+    res.status(429).json({
+      error: `Too many messages sent. Please wait ${rateCheck.retryAfterSec}s and try again.`,
     });
     return;
   }
 
+  if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+    res.status(400).json({ error: 'Invalid request payload.' });
+    return;
+  }
+
+  const body = req.body as {
+    message?: unknown;
+    history?: unknown;
+    regionName?: unknown;
+    currencyCode?: unknown;
+    languageName?: unknown;
+    roleView?: unknown;
+  };
+
+  if (typeof body.message !== 'string') {
+    res.status(400).json({ error: 'Please type a message before sending.' });
+    return;
+  }
+
+  const message = body.message.trim();
+  if (!message) {
+    res.status(400).json({ error: 'Please type a message before sending.' });
+    return;
+  }
+
+  if (message.length > MAX_MESSAGE_LENGTH) {
+    res.status(400).json({
+      error: `Message is too long (${message.length}/${MAX_MESSAGE_LENGTH} characters). Please shorten your question.`,
+    });
+    return;
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY?.trim();
+  if (!apiKey) {
+    res.status(503).json({
+      error:
+        'YourNeed AI Assistant is not configured yet. Please set OPENAI_API_KEY securely on the server (Settings > Secrets or .env).',
+    });
+    return;
+  }
+
+  const regionName = sanitizeContextValue(body.regionName, 'Global');
+  const currencyCode = sanitizeContextValue(body.currencyCode, 'USD', 12);
+  const languageName = sanitizeContextValue(body.languageName, 'English', 32);
+  const roleView =
+    body.roleView === 'technician'
+      ? 'Technician (Service Provider)'
+      : 'Customer (Homeowner)';
+
+  const model = process.env.OPENAI_MODEL?.trim() || DEFAULT_OPENAI_MODEL;
+
+  const instructions = [
+    'You are "YourNeed AI Assistant", the official intelligent assistant built into the YourNeed application.',
+    `Active session context (non-PII): Region = ${regionName}, Currency = ${currencyCode}, Preferred Language = ${languageName}, Current View = ${roleView}.`,
+    '',
+    'About YourNeed:',
+    '- YourNeed is a modern on-demand home services & repair marketplace that connects homeowners/customers with verified local technicians and tradespeople.',
+    '- Available service categories (12): Ceiling & Exhaust Fans (fan), AC & Cooling (ac), Refrigerator / Fridge (fridge), Washing Machine (washing_machine), Electrician & Wiring (electrical), Microwave & Oven (microwave), Geyser / Water Heater (geyser), TV & Home Electronics (tv_electronics), RO Water Purifier (water_purifier), Plumbing & Pipe Leaks (plumbing), Carpentry & Fixtures (carpentry), and Other Home Services (other).',
+    '- How customers book a service: Describe the issue or pick a category via "Book a Repair" (or click "Prepare Booking Request" from an AI booking suggestion), choose a preferred date/time slot, optionally enable "Fast Service / Priority Express" with an express bonus to attract technicians faster, track live milestones (Accepted -> Travelling -> Arrived -> Started -> Completed), message the technician, and receive a digital invoice.',
+    '- How technicians / service providers register & receive requests: Sign in, switch to the Technician Dashboard (via the Profile tab or role switcher), complete trade specialty & phone/ID verification details, turn on "On Duty", browse nearby customer requests in the live job feed, accept/claim jobs, update travel and work milestones, and track earnings.',
+    '',
+    'Assistant responsibilities & rules:',
+    '- Help customers find the right service category, explain electrical, plumbing, and appliance repair categories clearly, guide booking steps, explain technician onboarding & job flow, and answer general questions politely and clearly.',
+    '- When giving troubleshooting tips, share safe basic checks ONLY (e.g., checking wall switch, circuit breaker, power plug, or water valve). NEVER advise opening live electrical panels, touching exposed wires, disassembling compressors, or performing hazardous gas/electrical repairs.',
+    '- Set shouldSuggestBooking=true when the user needs a repair or is looking to hire/find a technician (e.g., "I need an electrician", "How can I find an AC technician?", or describing a broken appliance), and populate suggestedCategory, suggestedTitle, suggestedDescription, and suggestedUrgency.',
+    '- Set shouldSuggestBooking=false for general greetings, platform overviews, service category summaries, or technician registration questions.',
+    '- Set safetyWarning ONLY when discussing electrical, plumbing/geyser, AC, gas, or appliance repairs; otherwise set safetyWarning to null.',
+    '- Respond naturally in the user language (matching Preferred Language unless they write in another language) in a concise, friendly, easy-to-scan format (under ~150 words unless listing categories).',
+  ].join('\n');
+
+  const historyItems: EasyInputMessage[] = Array.isArray(body.history)
+    ? (body.history as AssistantTurn[])
+        .slice(-MAX_HISTORY_ITEMS)
+        .filter(
+          (item): item is { role?: string; text: string } =>
+            Boolean(item) &&
+            typeof item === 'object' &&
+            typeof item.text === 'string' &&
+            item.text.trim().length > 0
+        )
+        .map((item) => ({
+          role: item.role === 'model' || item.role === 'assistant' ? 'assistant' : 'user',
+          content: item.text.trim().slice(0, MAX_HISTORY_TEXT_LENGTH),
+        }))
+    : [];
+
+  const inputMessages: EasyInputMessage[] = [
+    ...historyItems,
+    {
+      role: 'user',
+      content: message,
+    },
+  ];
+
+  const client = new OpenAI({
+    apiKey,
+    timeout: OPENAI_TIMEOUT_MS,
+    maxRetries: 1,
+  });
+
+  const controller = new AbortController();
+  const timeoutTimer = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+
   try {
-    const body = req.body as {
-      message?: string;
-      history?: AssistantTurn[];
-      regionName?: string;
-      currencyCode?: string;
-      languageName?: string;
-      roleView?: string;
-    };
-
-    const message = (body?.message || '').trim();
-    if (!message) {
-      res.status(400).json({ error: 'Please type a repair question first.' });
-      return;
-    }
-
-    const regionName = body?.regionName || 'Global';
-    const currencyCode = body?.currencyCode || 'USD';
-    const languageName = body?.languageName || 'English';
-    const roleView =
-      body?.roleView === 'technician'
-        ? 'Technician (Servicer)'
-        : 'Homeowner (Service Getter)';
-
-    const ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        },
-      },
-    });
-
-    const systemInstruction = [
-      'You are the AI Service Assistant inside "Your Need", a trusted home appliance and repair platform.',
-      `Active user context: Country/Region = ${regionName}, Currency = ${currencyCode}, Language = ${languageName}, Role = ${roleView}.`,
-      'Strict safety & booking preparation rules:',
-      '- Identify the most appropriate applianceCategory from: fan, ac, fridge, washing_machine, electrical, microwave, geyser, tv_electronics, water_purifier, plumbing, carpentry, other.',
-      '- Give clear, safe initial checks ONLY (such as checking if the wall switch or circuit breaker tripped, or unplugging safely).',
-      '- NEVER encourage customers to open live electrical panels, touch exposed wiring, disassemble motors/compressors, or attempt dangerous electrical or gas repairs themselves.',
-      '- When the user describes a broken appliance (e.g., "My washing machine is not starting"), set shouldSuggestBooking to true and prepare a clean issueTitle, concise issueDescription, and suggestedUrgency ("urgent_today" | "within_24h" | "flexible").',
-      '- Reply naturally in the user language (including English, Telugu, Hindi, Tamil, etc. when requested) in under 130 words.',
-    ].join('\n');
-
-    const historyItems = Array.isArray(body?.history)
-      ? body.history
-          .slice(-8)
-          .filter((item) => item && typeof item.text === 'string' && item.text.trim().length > 0)
-          .map((item) => ({
-            role: item.role === 'model' ? 'model' : 'user',
-            parts: [{ text: item.text.trim() }],
-          }))
-      : [];
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-4-hydrogen',
-      contents: [
-        ...historyItems,
-        {
-          role: 'user',
-          parts: [{ text: message }],
-        },
-      ],
-      config: {
-        systemInstruction,
-        responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            reply: {
-              type: Type.STRING,
-              description:
-                'Helpful, safety-first guidance in the requested language with rough local cost expectation if helpful.',
-            },
-            shouldSuggestBooking: {
-              type: Type.BOOLEAN,
-              description: 'True when the user described an appliance or home repair issue that can be booked.',
-            },
-            suggestedCategory: {
-              type: Type.STRING,
-              description: `One of: ${VALID_CATEGORIES.join(', ')}`,
-            },
-            suggestedTitle: {
-              type: Type.STRING,
-              description: 'Short clear headline for the booking request (max 90 chars).',
-            },
-            suggestedDescription: {
-              type: Type.STRING,
-              description: 'Concise problem summary prepared for the technician (max 300 chars).',
-            },
-            suggestedUrgency: {
-              type: Type.STRING,
-              description: 'One of: urgent_today, within_24h, flexible',
-            },
-            safetyWarning: {
-              type: Type.STRING,
-              description: 'Short safety note reminding not to open live electrical wiring.',
-            },
+    const response = await client.responses.create(
+      {
+        model,
+        instructions,
+        input: inputMessages,
+        max_output_tokens: 550,
+        text: {
+          format: {
+            type: 'json_schema',
+            name: 'yourneed_assistant_response',
+            strict: true,
+            schema: ASSISTANT_RESPONSE_SCHEMA,
           },
-          required: ['reply', 'shouldSuggestBooking', 'suggestedCategory'],
         },
       },
-    });
+      { signal: controller.signal }
+    );
 
-    const rawText = (response.text || '').trim();
+    const rawText = (response.output_text || '').trim();
     if (!rawText) {
       res.status(502).json({
-        error: 'The AI assistant returned an empty response. Please try asking again.',
+        error: 'YourNeed AI Assistant returned an empty response. Please try again.',
       });
       return;
     }
@@ -161,13 +302,16 @@ app.post('/api/assistant', async (req, res) => {
       suggestedTitle?: string;
       suggestedDescription?: string;
       suggestedUrgency?: string;
-      safetyWarning?: string;
+      safetyWarning?: string | null;
     } = {};
+
     try {
       parsed = JSON.parse(rawText);
     } catch {
-      parsed = { reply: rawText, shouldSuggestBooking: false };
+      parsed = { reply: rawText, shouldSuggestBooking: false, safetyWarning: null };
     }
+
+    const replyText = typeof parsed.reply === 'string' && parsed.reply.trim() ? parsed.reply.trim() : rawText;
 
     const cat = VALID_CATEGORIES.includes(
       parsed.suggestedCategory as (typeof VALID_CATEGORIES)[number]
@@ -182,29 +326,83 @@ app.post('/api/assistant', async (req, res) => {
         ? parsed.suggestedUrgency
         : 'within_24h';
 
+    const cleanSafetyWarning =
+      typeof parsed.safetyWarning === 'string' && parsed.safetyWarning.trim()
+        ? parsed.safetyWarning.trim()
+        : undefined;
+
     res.json({
-      reply: parsed.reply || rawText,
-      safetyWarning:
-        parsed.safetyWarning ||
-        'Do not open electrical panels or live wiring yourself—switch off the breaker and let a verified technician inspect safely.',
+      reply: replyText,
+      safetyWarning: cleanSafetyWarning,
       bookingDraft: parsed.shouldSuggestBooking
         ? {
             category: cat,
-            issueTitle: (parsed.suggestedTitle || message).slice(0, 95),
-            issueDescription: (parsed.suggestedDescription || message).slice(0, 450),
+            issueTitle: (parsed.suggestedTitle?.trim() || message).slice(0, 95),
+            issueDescription: (parsed.suggestedDescription?.trim() || message).slice(0, 450),
             urgency,
           }
         : null,
     });
   } catch (err: unknown) {
-    console.error('AI assistant error:', err);
-    const errMsg =
-      err instanceof Error
-        ? err.message
-        : 'Unable to reach the AI assistant right now.';
-    const statusMatch = errMsg.match(/\b(400|403|404|429|500|503)\b/);
-    const statusCode = statusMatch ? Number(statusMatch[1]) : 500;
-    res.status(statusCode).json({ error: errMsg });
+    if (err instanceof APIConnectionTimeoutError || (err instanceof Error && err.name === 'AbortError')) {
+      console.error('OpenAI Responses API timeout');
+      res.status(504).json({
+        error: 'The AI Assistant took too long to respond. Please try again.',
+      });
+      return;
+    }
+
+    if (err instanceof AuthenticationError) {
+      console.error('OpenAI authentication error (401)');
+      res.status(401).json({
+        error: 'OpenAI authentication failed. Please verify the server OPENAI_API_KEY configuration.',
+      });
+      return;
+    }
+
+    if (err instanceof PermissionDeniedError) {
+      console.error('OpenAI permission denied (403)');
+      res.status(403).json({
+        error: 'The configured OpenAI key does not have permission for this model.',
+      });
+      return;
+    }
+
+    if (err instanceof RateLimitError) {
+      console.error('OpenAI rate limit error (429)');
+      res.status(429).json({
+        error: 'YourNeed AI Assistant is currently busy due to API rate limits. Please wait a moment and try again.',
+      });
+      return;
+    }
+
+    if (err instanceof APIConnectionError) {
+      console.error('OpenAI network connection error');
+      res.status(503).json({
+        error: 'Unable to connect to the OpenAI service right now. Please check your connection and try again.',
+      });
+      return;
+    }
+
+    if (err instanceof APIError) {
+      const upstreamStatus = typeof err.status === 'number' ? err.status : 502;
+      console.error(`OpenAI APIError (${upstreamStatus})`);
+      const safeStatus = upstreamStatus >= 400 && upstreamStatus < 500 ? upstreamStatus : 502;
+      res.status(safeStatus).json({
+        error:
+          safeStatus === 400
+            ? 'The request could not be processed by the AI model. Please rephrase and try again.'
+            : 'The OpenAI service encountered an error. Please try again shortly.',
+      });
+      return;
+    }
+
+    console.error('Unexpected AI assistant server error');
+    res.status(500).json({
+      error: 'An unexpected server error occurred while contacting YourNeed AI Assistant.',
+    });
+  } finally {
+    clearTimeout(timeoutTimer);
   }
 });
 
