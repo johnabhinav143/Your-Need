@@ -46,21 +46,21 @@ export class ErrorBoundary extends React.Component<
       }
 
       return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-6">
-          <div className="w-full max-w-md bg-white dark:bg-[#171717] border border-[#E8DFC8] dark:border-[#2E2E2E] rounded-2xl p-6 shadow-sm">
-            <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 flex items-center justify-center text-amber-700 dark:text-amber-300 mb-4">
+        <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#07130F] flex items-center justify-center p-6">
+          <div className="w-full max-w-md yn-glass-card yn-tricolor-border rounded-2xl p-6 shadow-xl">
+            <div className="w-11 h-11 rounded-xl bg-[#FF9933]/15 border border-[#FF9933]/35 flex items-center justify-center text-[#E87516] dark:text-[#FFB866] mb-4">
               <AlertTriangle className="w-5 h-5" />
             </div>
-            <h2 className="text-lg font-semibold text-[#171717] dark:text-[#FFFDF7] mb-2">
+            <h2 className="text-lg font-semibold text-[#18231E] dark:text-[#FFFDF8] mb-2">
               Unable to complete request
             </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-5 break-words">
+            <p className="text-sm text-[#43564D] dark:text-[#9CB0A6] leading-relaxed mb-5 break-words">
               {friendlyMessage}
             </p>
             <button
               type="button"
               onClick={this.handleReset}
-              className="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-sm font-medium hover:bg-[#262626] dark:hover:brightness-110 transition-colors flex items-center justify-center gap-2"
+              className="w-full min-h-[44px] px-4 py-2.5 rounded-xl yn-btn-saffron text-sm font-medium flex items-center justify-center gap-2"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Return to Your Need</span>

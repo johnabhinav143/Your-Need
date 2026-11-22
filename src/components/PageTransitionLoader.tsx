@@ -2,6 +2,7 @@ import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { TypewriterText } from './AnimatedTypography';
+import { BrandLogoMark } from './BrandLogo';
 
 const useIsomorphicLayoutEffect =
   typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -48,20 +49,18 @@ const LoaderRings: React.FC<{ shouldReduceMotion: boolean }> = ({
   }, [shouldReduceMotion]);
 
   return (
-    <div ref={ringRef} className="relative w-20 h-20 flex items-center justify-center mb-5">
+    <div ref={ringRef} className="relative w-24 h-24 flex items-center justify-center mb-5">
       <div
         ref={outerRingRef}
         data-loader-ring="outer"
-        className="absolute inset-0 rounded-full border border-[#D6A84F]/35 border-t-[#F3D999]"
+        className="absolute inset-0 rounded-full border-2 border-[#FF9933]/25 border-t-[#FF9933]"
       />
       <div
         ref={innerRingRef}
         data-loader-ring="inner"
-        className="absolute inset-2.5 rounded-full border border-[#D6A84F]/25 border-b-[#D6A84F]"
+        className="absolute inset-2 rounded-full border-2 border-[#35C46A]/25 border-b-[#35C46A]"
       />
-      <span className="font-brand text-lg font-extrabold text-[#F3D999] tracking-widest">
-        YN
-      </span>
+      <BrandLogoMark size="md" animated={!shouldReduceMotion} />
     </div>
   );
 };
@@ -81,21 +80,21 @@ export const PageTransitionLoader: React.FC<PageTransitionLoaderProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.02, filter: 'blur(8px)' }}
           transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-[60] bg-[#08080A]/94 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center select-none pointer-events-auto"
+          className="fixed inset-0 z-[60] bg-[#07130F]/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center select-none pointer-events-auto"
           role="status"
           aria-live="polite"
         >
           <LoaderRings shouldReduceMotion={Boolean(shouldReduceMotion)} />
 
-          <p className="font-brand text-base font-bold tracking-[0.2em] text-[#FFF8EA] uppercase">
-            YOUR NEED
+          <p className="font-brand text-base font-bold tracking-[0.22em] yn-tricolor-text uppercase">
+            YOURNEED
           </p>
           <TypewriterText
             text={label}
             as="p"
             speedMs={18}
             delayMs={20}
-            className="text-xs text-[#D6A84F] mt-2 font-medium"
+            className="text-xs text-[#FFB866] mt-2 font-medium"
           />
         </motion.div>
       ) : null}

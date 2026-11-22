@@ -11,6 +11,7 @@ export interface ZenGoldShaderHeroProps {
   currencyCode: string;
   readyTechCount: number;
   variant?: 'full' | 'compact';
+  particleLayer?: React.ReactNode;
   onExploreServices: () => void;
   onBecomeProvider: () => void;
 }
@@ -112,34 +113,38 @@ const WAVE_FRAGMENT_SHADER = /* glsl */ `
     float broadSpec = pow(max(dot(normal, halfVec), 0.0), 7.5);
     float rim = pow(1.0 - max(dot(normal, viewDir), 0.0), 2.6) * max(dot(normal, rimDir) * 0.5 + 0.5, 0.0);
 
-    // Metallic Gold #D6AE53 Palette
-    vec3 obsidian = vec3(0.028, 0.027, 0.035);
-    vec3 deepBronze = vec3(0.22, 0.15, 0.045);
-    vec3 antiqueGold = vec3(0.62, 0.46, 0.16);
-    vec3 metallicGold = vec3(0.839, 0.682, 0.325); // #D6AE53
-    vec3 champagneHighlight = vec3(0.985, 0.905, 0.68);
+    // Darkened Indian Tricolour Palette (#07130F, #075E36, #E87516, #FF9933, #FFD28A)
+    vec3 darkBg = vec3(0.027, 0.075, 0.059);       // #07130F
+    vec3 deepEmerald = vec3(0.027, 0.369, 0.212);  // #075E36
+    vec3 deepSaffron = vec3(0.910, 0.459, 0.086);  // #E87516
+    vec3 saffron = vec3(1.0, 0.600, 0.200);        // #FF9933
+    vec3 ivoryHighlight = vec3(1.0, 0.855, 0.600); // #FFD28A / #FFFDF8 warm highlight
+    vec3 lightEmerald = vec3(0.208, 0.769, 0.416); // #35C46A
 
-    // Map wave height & specular curvature to brushed liquid-gold tones
+    // Map wave height & curvature to darkened emerald depths with saffron & ivory crest reflections
     float crestMask = smoothstep(-0.15, 0.85, hC);
     float ribbonBand = smoothstep(0.56, 0.78, sin(hC * 9.0 + aspectUv.x * 2.0 - t * 0.35) * 0.5 + 0.5);
+    float tricolorBlend = smoothstep(-0.45, 0.55, aspectUv.x + aspectUv.y * 0.35);
 
-    vec3 color = mix(obsidian, deepBronze, crestMask * 0.65);
-    color = mix(color, antiqueGold, smoothstep(0.32, 0.88, crestMask) * (0.45 + 0.55 * diff));
-    color += metallicGold * broadSpec * 0.58;
-    color += metallicGold * ribbonBand * (0.28 + 0.45 * diff);
-    color += champagneHighlight * spec * 0.92;
-    color += metallicGold * rim * 0.34;
+    vec3 baseWave = mix(darkBg, deepEmerald * 0.78, crestMask * 0.72);
+    vec3 accentWave = mix(deepSaffron * 0.62, deepEmerald * 0.85, tricolorBlend);
+    vec3 color = mix(baseWave, accentWave, smoothstep(0.32, 0.88, crestMask) * (0.42 + 0.55 * diff));
 
-    // Warm cursor aura in metallic gold
+    color += mix(saffron, lightEmerald, tricolorBlend) * broadSpec * 0.48;
+    color += mix(deepSaffron, lightEmerald, smoothstep(0.2, 0.8, vUv.x)) * ribbonBand * (0.24 + 0.42 * diff);
+    color += ivoryHighlight * spec * 0.82;
+    color += mix(saffron, lightEmerald, 0.5) * rim * 0.28;
+
+    // Warm cursor aura in saffron-ivory
     float pointerDist = length(aspectUv - mouseAspect);
-    float pointerGlow = exp(-pointerDist * 2.8) * 0.22 * uMouseActive;
-    color += mix(metallicGold, champagneHighlight, 0.4) * pointerGlow;
+    float pointerGlow = exp(-pointerDist * 2.8) * 0.24 * uMouseActive;
+    color += mix(saffron, ivoryHighlight, 0.45) * pointerGlow;
 
-    // Horizon & bottom editorial vignette so headline & CTAs remain ultra-legible
+    // Horizon & left-side readability vignette
     float leftReadabilityMask = smoothstep(-0.15, 0.85, vUv.x);
     float radialVignette = smoothstep(1.18, 0.18, length(centered * vec2(1.05, 1.25)));
     color *= mix(0.62, 1.0, radialVignette);
-    color = mix(obsidian * 1.15, color, mix(0.66, 1.0, leftReadabilityMask * 0.55 + 0.45));
+    color = mix(darkBg * 1.05, color, mix(0.66, 1.0, leftReadabilityMask * 0.55 + 0.45));
 
     gl_FragColor = vec4(color, 1.0);
   }
@@ -153,8 +158,10 @@ const PARTICLE_VERTEX_SHADER = /* glsl */ `
 
   attribute float aScale;
   attribute float aPhase;
+  attribute float aTint;
 
   varying float vAlpha;
+  varying float vTint;
 
   void main() {
     float t = uReducedMotion > 0.5 ? 0.0 : uTime;
@@ -171,7 +178,8 @@ const PARTICLE_VERTEX_SHADER = /* glsl */ `
     // Smooth vertical fade near top and bottom edges
     float edgeFade = smoothstep(-1.75, -0.7, pos.y) * smoothstep(1.75, 0.7, pos.y);
     float twinkle = 0.58 + 0.42 * sin(t * 1.6 + aPhase * 6.28);
-    vAlpha = edgeFade * twinkle * 0.72;
+    vAlpha = edgeFade * twinkle * 0.76;
+    vTint = aTint;
 
     gl_Position = projectionMatrix * mvPosition;
   }
@@ -180,13 +188,18 @@ const PARTICLE_VERTEX_SHADER = /* glsl */ `
 const PARTICLE_FRAGMENT_SHADER = /* glsl */ `
   precision mediump float;
   varying float vAlpha;
+  varying float vTint;
 
   void main() {
     float d = length(gl_PointCoord - vec2(0.5));
     if (d > 0.5) discard;
     float glow = pow(1.0 - d * 2.0, 2.2);
-    vec3 goldCore = mix(vec3(0.839, 0.682, 0.325), vec3(1.0, 0.94, 0.76), glow);
-    gl_FragColor = vec4(goldCore, glow * vAlpha);
+    vec3 saffronColor = vec3(1.0, 0.60, 0.20);
+    vec3 goldWhite = vec3(1.0, 0.90, 0.68);
+    vec3 emeraldColor = vec3(0.21, 0.77, 0.42);
+    vec3 particleBase = vTint < 0.45 ? saffronColor : (vTint < 0.75 ? goldWhite : emeraldColor);
+    vec3 finalCol = mix(particleBase, vec3(1.0, 0.98, 0.92), glow * 0.65);
+    gl_FragColor = vec4(finalCol, glow * vAlpha);
   }
 `;
 
@@ -226,6 +239,7 @@ export const ZenGoldShaderHero: React.FC<ZenGoldShaderHeroProps> = ({
   currencyCode,
   readyTechCount,
   variant = 'compact',
+  particleLayer,
   onExploreServices,
   onBecomeProvider,
 }) => {
@@ -401,6 +415,7 @@ export const ZenGoldShaderHero: React.FC<ZenGoldShaderHeroProps> = ({
     const positions = new Float32Array(particleCount * 3);
     const scales = new Float32Array(particleCount);
     const phases = new Float32Array(particleCount);
+    const tints = new Float32Array(particleCount);
 
     for (let i = 0; i < particleCount; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 6.4;
@@ -408,12 +423,14 @@ export const ZenGoldShaderHero: React.FC<ZenGoldShaderHeroProps> = ({
       positions[i * 3 + 2] = (Math.random() - 0.5) * 1.4;
       scales[i] = 0.35 + Math.random() * 0.95;
       phases[i] = Math.random() * 4.0;
+      tints[i] = Math.random();
     }
 
     const particleGeometry = new THREE.BufferGeometry();
     particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     particleGeometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
     particleGeometry.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
+    particleGeometry.setAttribute('aTint', new THREE.BufferAttribute(tints, 1));
 
     const particleUniforms = {
       uTime: { value: 0 },
@@ -625,13 +642,13 @@ export const ZenGoldShaderHero: React.FC<ZenGoldShaderHeroProps> = ({
   return (
     <div
       ref={sectionRef}
-      className={`relative rounded-2xl overflow-hidden border border-[#D6AE53]/28 bg-[#141414] text-white ${
+      className={`relative rounded-2xl overflow-hidden yn-tricolor-border bg-[#07130F] text-[#FFFDF8] ${
         isCompact
-          ? 'shadow-[0_12px_32px_-20px_rgba(0,0,0,0.75)]'
-          : 'mb-6 shadow-[0_20px_50px_-24px_rgba(0,0,0,0.85)]'
+          ? 'shadow-[0_16px_40px_-20px_rgba(0,0,0,0.85)]'
+          : 'mb-6 shadow-[0_24px_56px_-24px_rgba(0,0,0,0.9)]'
       }`}
     >
-      {/* Procedural Obsidian + Metallic Gold Fallback Backdrop (active when WebGL unavailable or context lost) */}
+      {/* Procedural Darkened Tricolour Fallback Backdrop (active when WebGL unavailable or context lost) */}
       <div
         aria-hidden="true"
         className={`absolute inset-0 pointer-events-none transition-opacity duration-500 ${
@@ -639,11 +656,11 @@ export const ZenGoldShaderHero: React.FC<ZenGoldShaderHeroProps> = ({
         }`}
         style={{
           background:
-            'radial-gradient(115% 85% at 78% 22%, rgba(214, 174, 83, 0.28) 0%, rgba(158, 118, 40, 0.14) 38%, rgba(8, 8, 8, 0.98) 78%), linear-gradient(135deg, #080808 0%, #141414 55%, #080808 100%)',
+            'radial-gradient(95% 80% at 15% 18%, rgba(232, 117, 22, 0.28) 0%, transparent 52%), radial-gradient(95% 85% at 86% 80%, rgba(7, 94, 54, 0.38) 0%, transparent 56%), linear-gradient(135deg, #07130F 0%, #071B16 54%, #101A17 100%)',
         }}
       />
 
-      {/* Dedicated WebGL Mount Layer (isolated from React overlay DOM) */}
+      {/* Dedicated WebGL Mount Layer */}
       <div
         ref={canvasMountRef}
         aria-hidden="true"
@@ -653,73 +670,84 @@ export const ZenGoldShaderHero: React.FC<ZenGoldShaderHeroProps> = ({
       {/* Measured Readability Scrim */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#080808]/92 via-[#080808]/68 to-[#080808]/25"
+        className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#07130F]/94 via-[#071B16]/72 to-[#07130F]/35"
       />
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#D6AE53]/55 to-transparent pointer-events-none"
+        className="absolute inset-x-0 top-0 h-[2px] yn-tricolor-bar pointer-events-none opacity-80"
       />
+
+      {/* Dedicated Cinematic Golden Particle Component Layer */}
+      {particleLayer}
 
       {/* Foreground Semantic Content & Interactive Controls */}
       <div
         ref={contentRef}
         className={
           isCompact
-            ? 'relative z-10 p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5'
-            : 'relative z-10 px-6 py-10 sm:px-10 sm:py-12 lg:px-12 lg:py-14 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8'
+            ? 'relative z-10 p-7 sm:p-9 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6'
+            : 'relative z-10 px-7 py-11 sm:px-11 sm:py-14 lg:px-14 lg:py-16 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-10'
         }
       >
-        <div className={isCompact ? 'max-w-xl space-y-3' : 'max-w-2xl space-y-5'}>
+        <div className={isCompact ? 'max-w-xl space-y-4' : 'max-w-2xl space-y-5'}>
           {/* Editorial Eyebrow */}
-          <div className="yn-hero-eyebrow flex items-center gap-2 text-xs font-medium text-[#D6AE53]">
-            <Sparkles className="w-3.5 h-3.5 text-[#D6AE53] shrink-0" />
+          <div className="yn-hero-eyebrow flex items-center gap-2.5 text-xs sm:text-sm font-semibold text-[#FFB866]">
+            <Sparkles className="w-4 h-4 text-[#FF9933] shrink-0" />
             <span className="truncate">
               {regionName} · {currencyCode} · {readyTechCount} Pros Ready
             </span>
           </div>
 
-          {/* Main Metallic Gold Heading */}
+          {/* Main Tricolour Heading with Soft Ambient Lighting */}
           <div className="yn-hero-title relative inline-block">
+            <div
+              aria-hidden="true"
+              className="absolute -inset-x-6 -inset-y-3 rounded-full bg-gradient-to-r from-[#FF9933]/18 via-[#FFFDF8]/8 to-[#138808]/18 blur-2xl pointer-events-none"
+            />
             <h1
-              className={`relative font-brand font-bold tracking-[0.04em] leading-[1.08] text-[#D6AE53] ${
-                isCompact ? 'text-2xl sm:text-[28px]' : 'text-4xl sm:text-5xl lg:text-6xl'
+              className={`relative font-brand font-extrabold tracking-[0.06em] leading-[1.08] bg-gradient-to-r from-[#FFB866] via-[#FFFDF8] to-[#35C46A] bg-clip-text text-transparent animate-brand-gradient drop-shadow-[0_4px_18px_rgba(0,0,0,0.65)] ${
+                isCompact ? 'text-2xl sm:text-[32px]' : 'text-4xl sm:text-5xl lg:text-6xl'
               }`}
             >
-              YourNeed
+              YOURNEED
             </h1>
           </div>
 
           {/* Brand Subtitle */}
           <p
-            className={`yn-hero-subtitle text-white/90 font-normal leading-relaxed ${
-              isCompact ? 'text-sm max-w-md' : 'font-display text-xl sm:text-2xl max-w-xl'
+            className={`yn-hero-subtitle text-[#E8EDF2] font-normal leading-relaxed ${
+              isCompact ? 'text-sm sm:text-base max-w-md' : 'font-display text-xl sm:text-2xl max-w-xl'
             }`}
           >
-            Find Services. Connect Easily. Get Things Done.
+            Find Everything You Need, In One Place.
           </p>
 
-          {/* Primary & Secondary CTAs */}
-          <div className="yn-hero-ctas pt-1 flex flex-wrap items-center gap-3">
+          {/* Primary Saffron & Secondary Emerald-Trimmed Glass CTAs */}
+          <div className="yn-hero-ctas pt-2 flex flex-wrap items-center gap-3.5">
             <button
               type="button"
               onClick={onExploreServices}
               className={`${
-                isCompact ? 'min-h-[44px] px-5 py-2.5 text-xs' : 'min-h-[48px] px-6 py-3 text-sm'
-              } rounded-xl bg-[#D6AE53] text-[#080808] font-bold hover:brightness-105 active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0`}
+                isCompact ? 'min-h-[46px] px-6 py-3 text-xs sm:text-sm' : 'min-h-[50px] px-7 py-3.5 text-sm'
+              } rounded-xl yn-btn-saffron inline-flex items-center justify-center gap-2.5 whitespace-nowrap shrink-0`}
             >
-              <Compass className="w-4 h-4 shrink-0" />
-              <span>Explore Services</span>
-              <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-white/35 blur-sm animate-gold-sheen"
+              />
+              <Compass className="w-4 h-4 shrink-0 relative z-10" />
+              <span className="relative z-10">Explore Services</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0 relative z-10" />
             </button>
 
             <button
               type="button"
               onClick={onBecomeProvider}
               className={`${
-                isCompact ? 'min-h-[44px] px-4 py-2.5 text-xs' : 'min-h-[48px] px-5 py-3 text-sm'
-              } rounded-xl bg-[#1C1C1C]/95 border border-white/[0.12] text-white font-semibold hover:border-[#D6AE53]/60 active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap shrink-0`}
+                isCompact ? 'min-h-[46px] px-5 py-3 text-xs sm:text-sm' : 'min-h-[50px] px-6 py-3.5 text-sm'
+              } rounded-xl bg-[#101A17]/90 border border-[#35C46A]/35 text-[#FFFDF8] font-semibold hover:border-[#35C46A]/75 hover:bg-[#075E36]/35 active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2.5 whitespace-nowrap shrink-0 shadow-[0_10px_24px_-14px_rgba(7,94,54,0.8)]`}
             >
-              <Wrench className="w-3.5 h-3.5 text-[#D6AE53] shrink-0" />
+              <Wrench className="w-4 h-4 text-[#35C46A] shrink-0" />
               <span>Become a Service Provider</span>
             </button>
           </div>
@@ -728,27 +756,27 @@ export const ZenGoldShaderHero: React.FC<ZenGoldShaderHeroProps> = ({
         {/* Right Editorial Metric Anchors (Only in Full mode) */}
         {!isCompact ? (
           <div className="yn-hero-meta grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-3 lg:w-64 shrink-0">
-            <div className="rounded-xl bg-[#1C1C1C]/95 border border-white/[0.08] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-wider text-[#A0A0A0] font-semibold">
+            <div className="rounded-xl bg-[#101A17]/88 backdrop-blur-md border border-[#FF9933]/25 px-4 py-3 shadow-lg">
+              <p className="text-[11px] uppercase tracking-wider text-[#E8EDF2]/70 font-semibold">
                 Verified Specialists
               </p>
-              <p className="font-display text-2xl font-bold text-[#D6AE53] tabular-nums mt-0.5">
+              <p className="font-display text-2xl font-bold text-[#FFB866] tabular-nums mt-0.5">
                 {readyTechCount}+ Active
               </p>
             </div>
-            <div className="rounded-xl bg-[#1C1C1C]/95 border border-white/[0.08] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-wider text-[#A0A0A0] font-semibold">
+            <div className="rounded-xl bg-[#101A17]/88 backdrop-blur-md border border-white/15 px-4 py-3 shadow-lg">
+              <p className="text-[11px] uppercase tracking-wider text-[#E8EDF2]/70 font-semibold">
                 Dispatch Standard
               </p>
-              <p className="font-display text-xl font-bold text-white mt-0.5">
+              <p className="font-display text-xl font-bold text-[#FFFDF8] mt-0.5">
                 Live Quote Approval
               </p>
             </div>
-            <div className="col-span-2 sm:col-span-1 rounded-xl bg-[#1C1C1C]/95 border border-white/[0.08] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-wider text-[#A0A0A0] font-semibold">
+            <div className="col-span-2 sm:col-span-1 rounded-xl bg-[#101A17]/88 backdrop-blur-md border border-[#35C46A]/30 px-4 py-3 shadow-lg">
+              <p className="text-[11px] uppercase tracking-wider text-[#E8EDF2]/70 font-semibold">
                 Coverage Currency
               </p>
-              <p className="font-display text-xl font-bold text-[#D6AE53] mt-0.5">
+              <p className="font-display text-xl font-bold text-[#7DFF9B] mt-0.5">
                 {regionName} · {currencyCode}
               </p>
             </div>

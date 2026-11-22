@@ -170,38 +170,40 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
   return (
     <section
       id="admin-dashboard"
-      className="bg-white/95 dark:bg-[#171717]/90 backdrop-blur-md border border-[#D6A84F]/40 dark:border-[#D6A84F]/35 rounded-2xl p-5 sm:p-6 space-y-5 shadow-sm"
+      className="yn-glass-card yn-tricolor-border rounded-2xl p-6 sm:p-8 space-y-7 shadow-xl"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E8DFC8] dark:border-[#2E2E2E]">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#171717] text-[#D6A84F] flex items-center justify-center shrink-0">
-            <Shield className="w-5 h-5" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#075E36]/15 dark:border-white/[0.1]">
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#FF9933] via-[#FFFDF8] to-[#138808] p-[1.5px] shrink-0">
+            <div className="w-full h-full rounded-[10px] bg-[#071B16] text-[#FF9933] flex items-center justify-center">
+              <Shield className="w-5 h-5" />
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg sm:text-xl font-bold text-[#171717] dark:text-white font-display">
+          <div className="space-y-0.5">
+            <h2 className="text-lg sm:text-xl font-bold font-display yn-tricolor-text">
               Admin Operations &amp; Saved Directory
             </h2>
-            <p className="text-xs text-[#595959] dark:text-[#B5ADA0]">
+            <p className="text-xs sm:text-sm text-[#43564D] dark:text-[#9CB0A6]">
               View every saved email, phone number, customer, technician, and organization login record
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 text-xs">
-          <span className="px-3 py-1.5 rounded-xl bg-[#FFFDF7] dark:bg-[#D6A84F]/15 text-[#8F6412] dark:text-[#D6A84F] font-semibold">
+        <div className="flex flex-wrap gap-2.5 text-xs">
+          <span className="px-3.5 py-2 rounded-xl bg-[#138808]/12 dark:bg-[#35C46A]/15 border border-[#138808]/25 text-[#138808] dark:text-[#7DFF9B] font-semibold">
             {loginRecords.length} Logins · {users.length} Profiles
           </span>
-          <span className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-500/15 text-amber-800 dark:text-amber-200 font-semibold">
+          <span className="px-3.5 py-2 rounded-xl bg-[#FF9933]/14 dark:bg-[#FF9933]/18 border border-[#FF9933]/30 text-[#E87516] dark:text-[#FFD28A] font-semibold">
             {pendingVerifyCount} Pending Verify
           </span>
-          <span className="px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-500/15 text-rose-800 dark:text-rose-200 font-semibold">
+          <span className="px-3.5 py-2 rounded-xl bg-rose-500/12 border border-rose-500/25 text-rose-700 dark:text-rose-300 font-semibold">
             {openReportsCount} Open Reports
           </span>
         </div>
       </div>
 
       {/* Sub-navigation */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2.5">
         {(
           [
             {
@@ -230,10 +232,10 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
               key={tab.id}
               type="button"
               onClick={() => setAdminTab(tab.id)}
-              className={`min-h-[42px] px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-colors ${
+              className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all whitespace-nowrap shrink-0 ${
                 active
-                  ? 'bg-[#171717] border-[#171717] text-white dark:bg-[#D6A84F] dark:border-[#D6A84F] dark:text-[#171717]'
-                  : 'bg-slate-50 dark:bg-[#121212] border-[#E8DFC8] dark:border-[#2E2E2E] text-[#292929] dark:text-[#E8E2D5]'
+                  ? 'yn-btn-saffron border-[#FF9933]'
+                  : 'bg-[#E8EDF2]/80 dark:bg-[#07130F]/80 border-[#075E36]/15 dark:border-white/[0.1] text-[#18231E] dark:text-[#E8EDF2] hover:border-[#FF9933]/45'
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -244,35 +246,35 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
       </div>
 
       {adminTab === 'records' ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Direct Admin Records & Firestore Console Links */}
-          <div className="rounded-xl border border-[#D6A84F]/45 bg-[#FFFDF7] dark:bg-[#0D0D0D] p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <div className="space-y-1 min-w-0">
-              <p className="text-xs font-bold text-[#8F6412] dark:text-[#D6A84F] flex items-center gap-1.5">
+          <div className="rounded-2xl border border-[#FF9933]/35 bg-[#E8EDF2]/85 dark:bg-[#07130F]/85 p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1.5 min-w-0">
+              <p className="text-xs sm:text-sm font-bold text-[#E87516] dark:text-[#FFB866] flex items-center gap-2">
                 <Database className="w-4 h-4 shrink-0" />
                 <span>Live Cloud Firestore Database: {databaseId}</span>
               </p>
-              <p className="text-xs text-[#292929] dark:text-[#DDD6C7] break-all">
+              <p className="text-xs text-[#18231E]/85 dark:text-[#E8EDF2]/85 break-all">
                 Saved Directory URL:{' '}
-                <span className="font-semibold text-[#8F6412] dark:text-[#F3D999]">
+                <span className="font-semibold text-[#138808] dark:text-[#7DFF9B]">
                   {adminPortalUrl}
                 </span>
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
               <button
                 type="button"
                 onClick={handleCopyPortalUrl}
-                className="min-h-[38px] px-3 py-1.5 rounded-xl border border-[#D8CEB4] dark:border-[#2E2E2E] bg-white dark:bg-[#171717] text-xs font-semibold text-[#171717] dark:text-[#FFFDF7] hover:border-[#D6A84F] flex items-center gap-1.5"
+                className="min-h-[42px] px-4 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.14] bg-[#FFFDF8] dark:bg-[#071B16] text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] hover:border-[#FF9933] flex items-center gap-2"
               >
                 {copiedUrl ? (
                   <>
-                    <Check className="w-3.5 h-3.5 text-[#D6A84F]" />
+                    <Check className="w-4 h-4 text-[#138808] dark:text-[#35C46A]" />
                     <span>Copied URL</span>
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3.5 h-3.5 text-[#D6A84F]" />
+                    <Copy className="w-4 h-4 text-[#E87516] dark:text-[#FF9933]" />
                     <span>Copy Portal URL</span>
                   </>
                 )}
@@ -281,73 +283,73 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
                 href={firebaseConsoleUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="min-h-[38px] px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#D6A84F] to-[#F3D999] text-[#08080A] text-xs font-bold hover:brightness-105 flex items-center gap-1.5"
+                className="min-h-[42px] px-4 py-2 rounded-xl yn-btn-saffron text-xs font-bold flex items-center gap-2"
               >
                 <span>Open Firebase Database</span>
-                <ExternalLink className="w-3.5 h-3.5" />
+                <ExternalLink className="w-4 h-4" />
               </a>
             </div>
           </div>
 
           {/* Summary KPI Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-white dark:bg-[#121212] p-3">
-              <p className="text-[11px] font-medium text-[#595959] dark:text-[#B5ADA0]">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] bg-[#E8EDF2]/75 dark:bg-[#07130F]/75 p-4 space-y-1">
+              <p className="text-xs font-medium text-[#43564D] dark:text-[#9CB0A6]">
                 Total Saved Logins
               </p>
-              <p className="text-xl font-bold text-[#171717] dark:text-white tabular-nums mt-0.5">
+              <p className="text-2xl font-bold text-[#18231E] dark:text-[#FFFDF8] tabular-nums">
                 {loginRecords.length}
               </p>
             </div>
-            <div className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-white dark:bg-[#121212] p-3">
-              <p className="text-[11px] font-medium text-[#595959] dark:text-[#B5ADA0]">
+            <div className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] bg-[#E8EDF2]/75 dark:bg-[#07130F]/75 p-4 space-y-1">
+              <p className="text-xs font-medium text-[#43564D] dark:text-[#9CB0A6]">
                 Verified Emails
               </p>
-              <p className="text-xl font-bold text-[#8F6412] dark:text-[#F3D999] tabular-nums mt-0.5">
+              <p className="text-2xl font-bold text-[#138808] dark:text-[#35C46A] tabular-nums">
                 {loginRecords.filter((r) => Boolean(r.email)).length}
               </p>
             </div>
-            <div className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-white dark:bg-[#121212] p-3">
-              <p className="text-[11px] font-medium text-[#595959] dark:text-[#B5ADA0]">
+            <div className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] bg-[#E8EDF2]/75 dark:bg-[#07130F]/75 p-4 space-y-1">
+              <p className="text-xs font-medium text-[#43564D] dark:text-[#9CB0A6]">
                 Phone Numbers Saved
               </p>
-              <p className="text-xl font-bold text-[#8F6412] dark:text-[#D6A84F] tabular-nums mt-0.5">
+              <p className="text-2xl font-bold text-[#E87516] dark:text-[#FFB866] tabular-nums">
                 {phonesSavedCount}
               </p>
             </div>
-            <div className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-white dark:bg-[#121212] p-3">
-              <p className="text-[11px] font-medium text-[#595959] dark:text-[#B5ADA0]">
+            <div className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] bg-[#E8EDF2]/75 dark:bg-[#07130F]/75 p-4 space-y-1">
+              <p className="text-xs font-medium text-[#43564D] dark:text-[#9CB0A6]">
                 Organizations
               </p>
-              <p className="text-xl font-bold text-[#8F6412] dark:text-[#D6A84F] tabular-nums mt-0.5">
+              <p className="text-2xl font-bold text-[#E87516] dark:text-[#FFD28A] tabular-nums">
                 {orgCount}
               </p>
             </div>
           </div>
 
           {/* Search, Type Filter & CSV Download */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div className="relative flex-1">
-              <Search className="w-4 h-4 text-[#8F6412] dark:text-[#D6A84F] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <Search className="w-4 h-4 text-[#E87516] dark:text-[#FF9933] absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="search"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search by name, email, phone number, organization, or city..."
-                className="w-full min-h-[40px] pl-9 pr-3 py-1.5 rounded-xl border border-[#D8CEB4] dark:border-[#2E2E2E] bg-white dark:bg-[#121212] text-xs text-[#171717] dark:text-[#FFFDF7]"
+                className="w-full min-h-[46px] pl-11 pr-4 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-xs sm:text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
               />
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
               {(['all', 'customer', 'technician', 'organization'] as const).map((tOpt) => (
                 <button
                   key={tOpt}
                   type="button"
                   onClick={() => setTypeFilter(tOpt)}
-                  className={`min-h-[36px] px-2.5 py-1 rounded-xl text-xs font-semibold capitalize border transition-colors ${
+                  className={`min-h-[42px] px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize border transition-all ${
                     typeFilter === tOpt
-                      ? 'bg-[#171717] border-[#171717] text-white dark:bg-[#D6A84F] dark:border-[#D6A84F] dark:text-[#171717]'
-                      : 'border-[#E8DFC8] dark:border-[#2E2E2E] text-[#595959] dark:text-[#B5ADA0]'
+                      ? 'yn-btn-emerald border-[#35C46A]'
+                      : 'border-[#075E36]/15 dark:border-white/[0.1] text-[#43564D] dark:text-[#9CB0A6] hover:text-[#18231E] dark:hover:text-[#FFFDF8]'
                   }`}
                 >
                   {tOpt}
@@ -357,9 +359,9 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
                 type="button"
                 onClick={handleExportCsv}
                 disabled={filteredRecords.length === 0}
-                className="min-h-[36px] px-3 py-1 rounded-xl bg-gradient-to-r from-[#D6A84F] to-[#F3D999] text-[#08080A] text-xs font-bold hover:brightness-105 disabled:opacity-50 flex items-center gap-1.5"
+                className="min-h-[42px] px-4 py-1.5 rounded-xl yn-btn-saffron text-xs font-bold disabled:opacity-50 flex items-center gap-2"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-4 h-4" />
                 <span>Export CSV</span>
               </button>
             </div>
@@ -367,49 +369,49 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
 
           {/* Saved Logins List */}
           {filteredRecords.length === 0 ? (
-            <div className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] p-6 text-center space-y-1">
-              <p className="text-sm font-semibold text-[#171717] dark:text-white">
+            <div className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] p-8 text-center space-y-2">
+              <p className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                 No matching saved login records yet
               </p>
-              <p className="text-xs text-[#595959] dark:text-[#B5ADA0]">
+              <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] max-w-md mx-auto">
                 Every person, customer, technician, or organization who signs in automatically appears here with their email, phone number, and timestamps.
               </p>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3.5">
               {filteredRecords.map((rec) => (
                 <div
                   key={rec.uid}
-                  className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-slate-50/70 dark:bg-[#121212]/60 p-3.5 flex flex-col lg:flex-row lg:items-center justify-between gap-3"
+                  className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] bg-[#E8EDF2]/65 dark:bg-[#07130F]/75 p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
                 >
-                  <div className="space-y-1.5 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-bold text-[#171717] dark:text-white">
+                  <div className="space-y-2 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="text-sm font-bold text-[#18231E] dark:text-[#FFFDF8]">
                         {rec.displayName}
                       </span>
                       <span
-                        className={`text-[11px] px-2 py-0.5 rounded-lg font-semibold capitalize ${
+                        className={`text-[11px] px-2.5 py-0.5 rounded-lg font-semibold capitalize ${
                           rec.accountType === 'organization'
-                            ? 'bg-[#D6A84F]/25 text-[#8F6412] dark:text-[#F3D999]'
+                            ? 'bg-[#FF9933]/20 text-[#E87516] dark:text-[#FFD28A]'
                             : rec.accountType === 'technician'
-                              ? 'bg-[#D6A84F]/15 text-[#8F6412] dark:text-[#D6A84F]'
-                              : 'bg-[#171717]/10 dark:bg-white/10 text-[#171717] dark:text-[#F4ECE0]'
+                              ? 'bg-[#138808]/18 text-[#138808] dark:text-[#7DFF9B]'
+                              : 'bg-[#075E36]/12 dark:bg-white/10 text-[#18231E] dark:text-[#E8EDF2]'
                         }`}
                       >
                         {rec.accountType}
                       </span>
                       {rec.organizationName ? (
-                        <span className="text-[11px] px-2 py-0.5 rounded-lg bg-white dark:bg-[#171717] border border-[#E8DFC8] dark:border-[#2E2E2E] text-[#171717] dark:text-[#FFFDF7] font-medium flex items-center gap-1">
-                          <Building2 className="w-3 h-3 text-[#D6A84F]" />
+                        <span className="text-[11px] px-2.5 py-0.5 rounded-lg bg-[#FFFDF8] dark:bg-[#071B16] border border-[#075E36]/15 dark:border-white/[0.1] text-[#18231E] dark:text-[#FFFDF8] font-medium flex items-center gap-1">
+                          <Building2 className="w-3 h-3 text-[#FF9933]" />
                           <span>{rec.organizationName}</span>
                         </span>
                       ) : null}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
                       <a
                         href={`mailto:${rec.email}`}
-                        className="text-[#8F6412] dark:text-[#F3D999] font-medium hover:underline flex items-center gap-1 break-all"
+                        className="text-[#E87516] dark:text-[#FFB866] font-medium hover:underline flex items-center gap-1.5 break-all"
                       >
                         <Mail className="w-3.5 h-3.5 shrink-0" />
                         <span>{rec.email}</span>
@@ -417,13 +419,13 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
                       {rec.phone ? (
                         <a
                           href={`tel:${rec.phone}`}
-                          className="text-[#171717] dark:text-[#FFFDF7] font-semibold tabular-nums hover:underline flex items-center gap-1"
+                          className="text-[#18231E] dark:text-[#FFFDF8] font-semibold tabular-nums hover:underline flex items-center gap-1.5"
                         >
-                          <Phone className="w-3.5 h-3.5 text-[#D6A84F] shrink-0" />
+                          <Phone className="w-3.5 h-3.5 text-[#138808] dark:text-[#35C46A] shrink-0" />
                           <span>{rec.phone}</span>
                         </a>
                       ) : (
-                        <span className="text-[#7A7367] dark:text-[#8E877C] flex items-center gap-1">
+                        <span className="text-[#5B6F65] dark:text-[#7E948A] flex items-center gap-1.5">
                           <Phone className="w-3.5 h-3.5 shrink-0" />
                           <span>Phone not entered yet</span>
                         </span>
@@ -431,11 +433,11 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
                     </div>
                   </div>
 
-                  <div className="text-left lg:text-right text-[11px] text-[#595959] dark:text-[#B5ADA0] shrink-0 space-y-0.5">
-                    <p className="font-medium text-[#292929] dark:text-[#DDD6C7]">
+                  <div className="text-left lg:text-right text-xs text-[#43564D] dark:text-[#9CB0A6] shrink-0 space-y-1">
+                    <p className="font-medium text-[#18231E] dark:text-[#E8EDF2]">
                       {rec.neighborhood} ({rec.countryCode}) · Role: {rec.role}
                     </p>
-                    <p className="tabular-nums">
+                    <p className="tabular-nums text-[11px]">
                       Login #{rec.loginCount} · Last seen {formatTimestamp(rec.lastLoginAt || rec.updatedAt)}
                     </p>
                   </div>
@@ -447,52 +449,52 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
       ) : null}
 
       {adminTab === 'technicians' ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {technicians.length === 0 ? (
-            <p className="text-sm text-[#595959] py-4 text-center">No technician profiles registered yet.</p>
+            <p className="text-sm text-[#43564D] dark:text-[#9CB0A6] py-6 text-center">No technician profiles registered yet.</p>
           ) : (
             technicians.map((tech) => {
               const vStatus = tech.verificationStatus || 'unverified';
               return (
                 <div
                   key={tech.uid}
-                  className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-slate-50/70 dark:bg-[#121212]/50 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] bg-[#E8EDF2]/65 dark:bg-[#07130F]/75 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
                 >
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-bold text-[#171717] dark:text-white">
+                  <div className="space-y-1.5 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="text-sm font-bold text-[#18231E] dark:text-[#FFFDF8]">
                         {tech.displayName}
                       </span>
                       <span
-                        className={`text-[11px] px-2 py-0.5 rounded-lg font-semibold ${
+                        className={`text-[11px] px-2.5 py-0.5 rounded-lg font-semibold ${
                           vStatus === 'verified'
-                            ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300'
+                            ? 'bg-[#138808]/18 text-[#138808] dark:text-[#7DFF9B]'
                             : vStatus === 'pending'
-                              ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300'
-                              : 'bg-slate-200 dark:bg-[#262626] text-[#292929] dark:text-[#DDD6C7]'
+                              ? 'bg-[#FF9933]/18 text-[#E87516] dark:text-[#FFD28A]'
+                              : 'bg-[#075E36]/12 dark:bg-white/10 text-[#18231E] dark:text-[#E8EDF2]'
                         }`}
                       >
                         {VERIFICATION_LABELS[vStatus]}
                       </span>
-                      <span className="text-[11px] px-2 py-0.5 rounded-lg bg-[#FFFDF7] dark:bg-[#D6A84F]/20 text-[#8F6412] dark:text-[#D6A84F] font-medium">
+                      <span className="text-[11px] px-2.5 py-0.5 rounded-lg bg-[#FFFDF8] dark:bg-[#071B16] border border-[#FF9933]/25 text-[#E87516] dark:text-[#FFB866] font-medium">
                         {tech.phoneVerified ? 'Phone Verified' : 'Phone Unverified'}
                       </span>
                       {!tech.isPublic ? (
-                        <span className="text-[11px] px-2 py-0.5 rounded-lg bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 font-semibold">
+                        <span className="text-[11px] px-2.5 py-0.5 rounded-lg bg-rose-500/15 text-rose-700 dark:text-rose-300 font-semibold">
                           Suspended / Hidden
                         </span>
                       ) : null}
                     </div>
-                    <p className="text-xs text-[#292929] dark:text-[#DDD6C7]">
+                    <p className="text-xs text-[#18231E]/85 dark:text-[#E8EDF2]/85">
                       {tech.neighborhood} ({tech.countryCode}) · {tech.yearsExperience || 0} yrs exp ·{' '}
                       {tech.idType ? `${tech.idType} ****${tech.idLast4 || ''}` : 'No ID submitted'}
                     </p>
-                    <p className="text-xs text-[#595959] dark:text-[#B5ADA0] truncate">
+                    <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] truncate">
                       Skills: {tech.specialties.join(', ')}
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                     <button
                       type="button"
                       disabled={busyId === tech.uid}
@@ -504,9 +506,9 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
                           setBusyId(null);
                         }
                       }}
-                      className="min-h-[40px] px-3 py-1.5 rounded-xl bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 flex items-center gap-1"
+                      className="min-h-[42px] px-4 py-1.5 rounded-xl yn-btn-emerald text-xs font-semibold flex items-center gap-1.5"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <CheckCircle2 className="w-4 h-4" />
                       <span>Approve Verify</span>
                     </button>
                     <button
@@ -520,9 +522,9 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
                           setBusyId(null);
                         }
                       }}
-                      className="min-h-[40px] px-3 py-1.5 rounded-xl border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300 text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-500/15 flex items-center gap-1"
+                      className="min-h-[42px] px-4 py-1.5 rounded-xl border border-rose-400/50 text-rose-700 dark:text-rose-300 text-xs font-semibold hover:bg-rose-500/15 flex items-center gap-1.5 transition-colors"
                     >
-                      <XCircle className="w-3.5 h-3.5" />
+                      <XCircle className="w-4 h-4" />
                       <span>{tech.isPublic ? 'Suspend' : 'Restore'}</span>
                     </button>
                   </div>
@@ -534,31 +536,31 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
       ) : null}
 
       {adminTab === 'reports' ? (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {reports.length === 0 ? (
-            <p className="text-sm text-[#595959] py-4 text-center">No user complaints or suspicious account reports yet.</p>
+            <p className="text-sm text-[#43564D] dark:text-[#9CB0A6] py-6 text-center">No user complaints or suspicious account reports yet.</p>
           ) : (
             reports.map((rep) => (
               <div
                 key={rep.id}
-                className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-slate-50/70 dark:bg-[#121212]/50 p-4 space-y-3"
+                className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] bg-[#E8EDF2]/65 dark:bg-[#07130F]/75 p-5 space-y-4"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <span className="text-xs font-bold uppercase tracking-wide text-rose-700 dark:text-rose-400">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-bold uppercase tracking-wide text-rose-600 dark:text-rose-400">
                       {rep.reason.replace('_', ' ')} · {rep.targetType}
                     </span>
-                    <h3 className="text-sm font-bold text-[#171717] dark:text-white">
+                    <h3 className="text-sm font-bold text-[#18231E] dark:text-[#FFFDF8]">
                       Target: {rep.targetName} (by {rep.reporterName})
                     </h3>
                   </div>
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white dark:bg-[#171717] border border-[#E8DFC8] dark:border-[#2E2E2E]">
+                  <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-[#FFFDF8] dark:bg-[#071B16] border border-[#075E36]/15 dark:border-white/[0.1] text-[#18231E] dark:text-[#E8EDF2]">
                     {rep.status.toUpperCase()} · {formatTimestamp(rep.createdAt)}
                   </span>
                 </div>
-                <p className="text-sm text-[#292929] dark:text-[#DDD6C7]">{rep.details}</p>
+                <p className="text-sm text-[#18231E]/85 dark:text-[#E8EDF2]/85 leading-relaxed">{rep.details}</p>
 
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <input
                     type="text"
                     maxLength={300}
@@ -567,9 +569,9 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
                       setNoteDrafts((prev) => ({ ...prev, [rep.id]: e.target.value }))
                     }
                     placeholder="Admin resolution / refund note..."
-                    className="flex-1 min-h-[40px] px-3 py-1.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#171717] text-xs text-[#171717] dark:text-[#FFFDF7]"
+                    className="flex-1 min-h-[44px] px-4 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#071B16] text-xs sm:text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex gap-2.5">
                     <button
                       type="button"
                       disabled={busyId === rep.id}
@@ -585,7 +587,7 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
                           setBusyId(null);
                         }
                       }}
-                      className="min-h-[40px] px-3 py-1.5 rounded-xl bg-emerald-700 text-white text-xs font-semibold"
+                      className="min-h-[44px] px-4 py-2 rounded-xl yn-btn-emerald text-xs font-semibold"
                     >
                       Mark Resolved
                     </button>
@@ -604,7 +606,7 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
                           setBusyId(null);
                         }
                       }}
-                      className="min-h-[40px] px-3 py-1.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] text-xs font-semibold text-[#292929] dark:text-[#E8E2D5]"
+                      className="min-h-[44px] px-4 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.14] text-xs font-semibold text-[#18231E] dark:text-[#E8EDF2] hover:border-[#FF9933]/50"
                     >
                       Dismiss
                     </button>
@@ -617,27 +619,27 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
       ) : null}
 
       {adminTab === 'users' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {users.map((u) => {
             const matchedLogin = loginRecords.find((lr) => lr.uid === u.uid);
             return (
               <div
                 key={u.uid}
-                className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-slate-50/70 dark:bg-[#121212]/50 p-3.5 text-xs space-y-1"
+                className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] bg-[#E8EDF2]/65 dark:bg-[#07130F]/75 p-5 text-xs space-y-1.5"
               >
-                <p className="text-sm font-bold text-[#171717] dark:text-white truncate">{u.displayName}</p>
-                <p className="text-[#292929] dark:text-[#DDD6C7] truncate">
+                <p className="text-sm font-bold text-[#18231E] dark:text-[#FFFDF8] truncate">{u.displayName}</p>
+                <p className="text-[#43564D] dark:text-[#9CB0A6] truncate">
                   Role: {u.role} · {u.neighborhood} ({u.countryCode || 'Global'})
                 </p>
                 {matchedLogin?.email ? (
-                  <p className="text-[#8F6412] dark:text-[#F3D999] truncate">{matchedLogin.email}</p>
+                  <p className="text-[#E87516] dark:text-[#FFB866] truncate">{matchedLogin.email}</p>
                 ) : null}
                 {matchedLogin?.phone ? (
-                  <p className="text-[#171717] dark:text-[#FFFDF7] font-semibold tabular-nums truncate">
+                  <p className="text-[#138808] dark:text-[#35C46A] font-semibold tabular-nums truncate">
                     {matchedLogin.phone}
                   </p>
                 ) : null}
-                <p className="text-slate-400 truncate">UID: {u.uid.slice(0, 14)}...</p>
+                <p className="text-[#5B6F65] dark:text-[#7E948A] truncate">UID: {u.uid.slice(0, 14)}...</p>
               </div>
             );
           })}
@@ -645,19 +647,19 @@ export const AdminDashboardPanel: React.FC<AdminDashboardPanelProps> = ({
       ) : null}
 
       {adminTab === 'jobs' ? (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {jobs.slice(0, 20).map((j) => (
             <div
               key={j.id}
-              className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-slate-50/70 dark:bg-[#121212]/50 p-3.5 flex items-center justify-between gap-3 text-xs"
+              className="rounded-2xl border border-[#075E36]/15 dark:border-white/[0.08] bg-[#E8EDF2]/65 dark:bg-[#07130F]/75 p-4.5 flex items-center justify-between gap-4 text-xs"
             >
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-[#171717] dark:text-white truncate">{j.issueTitle}</p>
-                <p className="text-[#595959] dark:text-[#B5ADA0] truncate">
+              <div className="min-w-0 space-y-1">
+                <p className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8] truncate">{j.issueTitle}</p>
+                <p className="text-[#43564D] dark:text-[#9CB0A6] truncate">
                   {CATEGORY_SHORT_MAP[j.applianceCategory]} · {j.customerName} → {j.technicianName || 'Unassigned'} · {STATUS_LABELS[j.status]}
                 </p>
               </div>
-              <span className="tabular-nums font-bold text-[#171717] dark:text-white shrink-0">
+              <span className="text-sm tabular-nums font-bold text-[#E87516] dark:text-[#FFB866] shrink-0">
                 {formatMoney(j.quotedFee || j.estimatedBudget, j.currencyCode || 'USD')}
               </span>
             </div>

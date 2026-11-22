@@ -318,396 +318,396 @@ export function RequestRepairSheet({
   };
 
   const formBody = (
-    <form onSubmit={handleSubmit} className={embedded ? 'p-4 sm:p-6 space-y-5' : 'overflow-y-auto px-6 py-5 space-y-5'}>
+    <form onSubmit={handleSubmit} className={embedded ? 'p-6 sm:p-7 space-y-6' : 'overflow-y-auto px-6 sm:px-7 py-6 space-y-6'}>
       {initialDraft ? (
-        <div className="rounded-xl bg-[#FFFDF7] dark:bg-[#D6AE53]/15 border border-[#D6AE53]/40 dark:border-[#D6AE53]/35 px-3.5 py-2.5 text-xs text-[#171717] dark:text-[#F3D58B] font-medium">
+        <div className="rounded-2xl bg-[#FF9933]/12 border border-[#FF9933]/35 px-4 py-3 text-xs text-[#18231E] dark:text-[#FFD28A] font-medium leading-relaxed">
           Pre-filled by AI Service Assistant. Review your slot, upload a photo/video if helpful, and submit.
         </div>
       ) : null}
 
-              <div>
-                <label className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-2">
-                  What needs to be repaired?
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {CATEGORY_OPTIONS.map((item) => {
-                    const active = category === item.id;
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setCategory(item.id)}
-                        className={`min-h-[44px] px-3 py-2 rounded-xl border text-left transition-colors flex items-center gap-2 ${
-                          active
-                            ? 'bg-[#FFFDF7] dark:bg-[#D6A84F]/20 border-[#D6A84F] text-[#171717] dark:text-[#D6A84F] font-semibold'
-                            : 'bg-white dark:bg-[#121212]/90 border-[#E8DFC8] dark:border-[#2E2E2E] text-[#292929] dark:text-[#E8E2D5] hover:border-slate-300 dark:hover:border-slate-600'
-                        }`}
-                      >
-                        <CategoryIcon category={item.id} className="w-4 h-4 shrink-0" />
-                        <span className="text-xs truncate">{item.shortLabel}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+      <div>
+        <label className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2.5">
+          What needs to be repaired?
+        </label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {CATEGORY_OPTIONS.map((item) => {
+            const active = category === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setCategory(item.id)}
+                className={`min-h-[46px] px-3.5 py-2.5 rounded-xl border text-left transition-colors flex items-center gap-2.5 ${
+                  active
+                    ? 'bg-[#FF9933]/14 border-[#FF9933] text-[#18231E] dark:text-[#FFD28A] font-semibold'
+                    : 'bg-[#FFFDF8] dark:bg-[#07130F]/90 border-[#075E36]/15 dark:border-white/[0.10] text-[#43564D] dark:text-[#E8EDF2] hover:border-[#FF9933]/40'
+                }`}
+              >
+                <CategoryIcon category={item.id} className="w-4 h-4 shrink-0" />
+                <span className="text-xs truncate">{item.shortLabel}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-              <div>
-                <label htmlFor="issue-title" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
-                  Short problem headline
-                </label>
-                <input
-                  id="issue-title"
-                  type="text"
-                  required
-                  maxLength={100}
-                  value={issueTitle}
-                  onChange={(e) => setIssueTitle(e.target.value)}
-                  placeholder="e.g., Washing machine not starting or draining"
-                  className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D6A84F] focus:border-[#D6A84F]"
-                />
-              </div>
+      <div>
+        <label htmlFor="issue-title" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2">
+          Short problem headline
+        </label>
+        <input
+          id="issue-title"
+          type="text"
+          required
+          maxLength={100}
+          value={issueTitle}
+          onChange={(e) => setIssueTitle(e.target.value)}
+          placeholder="e.g., Washing machine not starting or draining"
+          className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] placeholder:text-[#5B6F65] dark:placeholder:text-[#7E948A] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
+        />
+      </div>
 
-              <div>
-                <label htmlFor="issue-desc" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
-                  Symptoms &amp; details
-                </label>
-                <textarea
-                  id="issue-desc"
-                  required
-                  rows={3}
-                  maxLength={500}
-                  value={issueDescription}
-                  onChange={(e) => setIssueDescription(e.target.value)}
-                  placeholder="Share appliance model/type and symptoms so the technician brings the right tools and parts."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#D6A84F] focus:border-[#D6A84F]"
-                />
-              </div>
+      <div>
+        <label htmlFor="issue-desc" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2">
+          Symptoms &amp; details
+        </label>
+        <textarea
+          id="issue-desc"
+          required
+          rows={3}
+          maxLength={500}
+          value={issueDescription}
+          onChange={(e) => setIssueDescription(e.target.value)}
+          placeholder="Share appliance model/type and symptoms so the technician brings the right tools and parts."
+          className="w-full px-4 py-3 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] placeholder:text-[#5B6F65] dark:placeholder:text-[#7E948A] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
+        />
+      </div>
 
-              {/* Photo / Short Video Problem Upload */}
-              <div className="rounded-xl border border-dashed border-[#D8CEB4] dark:border-[#292929] bg-slate-50/70 dark:bg-[#121212]/50 p-4 space-y-2.5">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold text-[#171717] dark:text-white flex items-center gap-1.5">
-                      <Camera className="w-4 h-4 text-[#8F6412] dark:text-[#D6A84F]" />
-                      <span>Upload fault photo or short video (optional)</span>
-                    </p>
-                    <p className="text-[11px] text-[#595959] dark:text-[#B5ADA0] mt-0.5">
-                      Helps technicians inspect the problem before visiting and bring exact spare parts.
-                    </p>
-                  </div>
-                  {mediaUrl ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMediaUrl('');
-                        setMediaType('none');
-                        setMediaLabel('');
-                      }}
-                      className="min-h-[36px] px-2.5 rounded-lg text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/15 flex items-center gap-1"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Remove</span>
-                    </button>
-                  ) : null}
-                </div>
+      {/* Photo / Short Video Problem Upload */}
+      <div className="rounded-xl border border-dashed border-[#075E36]/25 dark:border-white/[0.15] bg-[#E8EDF2]/60 dark:bg-[#07130F]/65 p-4 space-y-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <p className="text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] flex items-center gap-1.5">
+              <Camera className="w-4 h-4 text-[#E87516] dark:text-[#FFB866]" />
+              <span>Upload fault photo or short video (optional)</span>
+            </p>
+            <p className="text-[11px] text-[#43564D] dark:text-[#9CB0A6] mt-0.5">
+              Helps technicians inspect the problem before visiting and bring exact spare parts.
+            </p>
+          </div>
+          {mediaUrl ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMediaUrl('');
+                setMediaType('none');
+                setMediaLabel('');
+              }}
+              className="min-h-[36px] px-2.5 rounded-lg text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 flex items-center gap-1"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Remove</span>
+            </button>
+          ) : null}
+        </div>
 
-                {!mediaUrl ? (
-                  <label className="min-h-[44px] px-4 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#171717] text-xs font-semibold text-[#292929] dark:text-[#E8E2D5] hover:border-[#D6A84F] cursor-pointer inline-flex items-center gap-2">
-                    <Film className="w-4 h-4 text-[#8F6412]" />
-                    <span>{mediaProcessing ? 'Processing media...' : 'Choose Photo or Short Video'}</span>
-                    <input
-                      type="file"
-                      accept="image/*,video/*"
-                      onChange={handleFileChange}
-                      className="sr-only"
-                    />
-                  </label>
-                ) : (
-                  <div className="space-y-1.5">
-                    {mediaType === 'video' ? (
-                      <video
-                        src={mediaUrl}
-                        controls
-                        className="w-full max-h-44 rounded-xl bg-black object-contain"
-                      />
-                    ) : (
-                      <img
-                        src={mediaUrl}
-                        alt="Uploaded fault preview"
-                        className="w-full max-h-44 rounded-xl object-cover border border-[#E8DFC8] dark:border-[#2E2E2E]"
-                      />
-                    )}
-                    <p className="text-[11px] text-[#595959] dark:text-[#B5ADA0] truncate">
-                      Attached: {mediaLabel}
-                    </p>
-                  </div>
-                )}
-              </div>
+        {!mediaUrl ? (
+          <label className="min-h-[44px] px-4 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#071B16] text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] hover:border-[#FF9933] cursor-pointer inline-flex items-center gap-2 transition-colors">
+            <Film className="w-4 h-4 text-[#E87516] dark:text-[#FFB866]" />
+            <span>{mediaProcessing ? 'Processing media...' : 'Choose Photo or Short Video'}</span>
+            <input
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleFileChange}
+              className="sr-only"
+            />
+          </label>
+        ) : (
+          <div className="space-y-1.5">
+            {mediaType === 'video' ? (
+              <video
+                src={mediaUrl}
+                controls
+                className="w-full max-h-44 rounded-xl bg-black object-contain"
+              />
+            ) : (
+              <img
+                src={mediaUrl}
+                alt="Uploaded fault preview"
+                className="w-full max-h-44 rounded-xl object-cover border border-[#075E36]/15 dark:border-white/[0.12]"
+              />
+            )}
+            <p className="text-[11px] text-[#43564D] dark:text-[#9CB0A6] truncate">
+              Attached: {mediaLabel}
+            </p>
+          </div>
+        )}
+      </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
-                    Service priority
-                  </label>
-                  <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#FFFDF7] dark:bg-[#0D0D0D] rounded-xl">
-                    {(
-                      [
-                        { id: 'urgent_today', label: 'Urgent' },
-                        { id: 'within_24h', label: '24 hrs' },
-                        { id: 'flexible', label: 'Flexible' },
-                      ] as const
-                    ).map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setUrgency(opt.id)}
-                        className={`min-h-[40px] px-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap ${
-                          urgency === opt.id
-                            ? opt.id === 'urgent_today'
-                              ? 'bg-[#D6A84F] text-[#08080A] shadow-sm font-bold'
-                              : 'bg-white dark:bg-[#262626] text-[#171717] dark:text-white shadow-sm'
-                            : 'text-[#292929] dark:text-[#DDD6C7] hover:text-[#171717] dark:hover:text-white'
-                        }`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                  {urgency === 'urgent_today' ? (
-                    <p className="text-[11px] font-medium text-[#8F6412] dark:text-[#F3D999] mt-1">
-                      Priority urgent queue · Subject to live availability ({availableTechCount} pros ready).
-                    </p>
-                  ) : null}
-                </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-1.5">
+            Service priority
+          </label>
+          <div className="grid grid-cols-3 gap-1.5 p-1 bg-[#E8EDF2] dark:bg-[#07130F] border border-[#075E36]/12 dark:border-white/[0.08] rounded-xl">
+            {(
+              [
+                { id: 'urgent_today', label: 'Urgent' },
+                { id: 'within_24h', label: '24 hrs' },
+                { id: 'flexible', label: 'Flexible' },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setUrgency(opt.id)}
+                className={`min-h-[40px] px-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+                  urgency === opt.id
+                    ? opt.id === 'urgent_today'
+                      ? 'yn-btn-saffron text-white shadow-sm font-bold'
+                      : 'bg-[#FFFDF8] dark:bg-[#071B16] text-[#18231E] dark:text-[#FFFDF8] border border-[#075E36]/20 dark:border-white/[0.12] shadow-sm'
+                    : 'text-[#43564D] dark:text-[#9CB0A6] hover:text-[#18231E] dark:hover:text-[#FFFDF8]'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {urgency === 'urgent_today' ? (
+            <p className="text-[11px] font-medium text-[#E87516] dark:text-[#FFD28A] mt-1">
+              Priority urgent queue · Subject to live availability ({availableTechCount} pros ready).
+            </p>
+          ) : null}
+        </div>
 
-                <div>
-                  <label htmlFor="est-budget" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
-                    Estimated service charge ({currencyCode})
-                  </label>
-                  <input
-                    id="est-budget"
-                    type="number"
-                    min={0}
-                    max={10000000}
-                    value={estimatedBudget}
-                    onChange={(e) => setEstimatedBudget(e.target.value)}
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
-                  />
-                </div>
-              </div>
+        <div>
+          <label htmlFor="est-budget" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-1.5">
+            Estimated service charge ({currencyCode})
+          </label>
+          <input
+            id="est-budget"
+            type="number"
+            min={0}
+            max={10000000}
+            value={estimatedBudget}
+            onChange={(e) => setEstimatedBudget(e.target.value)}
+            className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
+          />
+        </div>
+      </div>
 
-              {/* Pricing Transparency Card */}
-              <div className="rounded-xl bg-[#FFFDF7] dark:bg-[#0D0D0D]/75 border border-[#E8DFC8] dark:border-[#2E2E2E] p-4 space-y-2 text-xs">
-                <p className="font-bold text-[#171717] dark:text-white flex items-center gap-1.5">
-                  <Info className="w-4 h-4 text-[#8F6412] dark:text-[#D6A84F]" />
-                  <span>Transparent Price Breakdown</span>
-                </p>
-                <div className="flex justify-between text-[#292929] dark:text-[#DDD6C7]">
-                  <span>Inspection / Visiting Charge</span>
-                  <span className="tabular-nums font-semibold text-[#171717] dark:text-white">
-                    {formatMoney(inspectionFeeAmount, currencyCode)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-[#292929] dark:text-[#DDD6C7]">
-                  <span>Estimated Repair Budget</span>
-                  <span className="tabular-nums font-semibold text-[#171717] dark:text-white">
-                    {formatMoney(Number(estimatedBudget) || 0, currencyCode)}
-                  </span>
-                </div>
-                <p className="text-[11px] text-[#595959] dark:text-[#B5ADA0] pt-1 border-t border-[#E8DFC8] dark:border-[#2E2E2E]">
-                  Final price requires your explicit approval before repair begins. {CANCELLATION_POLICY_TEXT}
-                </p>
-              </div>
+      {/* Pricing Transparency Card */}
+      <div className="rounded-2xl bg-[#FFFDF8] dark:bg-[#07130F]/80 border border-[#075E36]/18 dark:border-white/[0.10] p-5 space-y-2.5 text-xs">
+        <p className="font-bold text-[#18231E] dark:text-[#FFFDF8] flex items-center gap-2">
+          <Info className="w-4 h-4 text-[#138808] dark:text-[#35C46A]" />
+          <span>Transparent Price Breakdown</span>
+        </p>
+        <div className="flex justify-between text-[#43564D] dark:text-[#9CB0A6]">
+          <span>Inspection / Visiting Charge</span>
+          <span className="tabular-nums font-semibold text-[#18231E] dark:text-[#FFFDF8]">
+            {formatMoney(inspectionFeeAmount, currencyCode)}
+          </span>
+        </div>
+        <div className="flex justify-between text-[#43564D] dark:text-[#9CB0A6]">
+          <span>Estimated Repair Budget</span>
+          <span className="tabular-nums font-semibold text-[#18231E] dark:text-[#FFFDF8]">
+            {formatMoney(Number(estimatedBudget) || 0, currencyCode)}
+          </span>
+        </div>
+        <p className="text-[11px] text-[#5B6F65] dark:text-[#7E948A] pt-2 border-t border-[#075E36]/12 dark:border-white/[0.08] leading-relaxed">
+          Final price requires your explicit approval before repair begins. {CANCELLATION_POLICY_TEXT}
+        </p>
+      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-2">
-                  Available appointment slots
-                </label>
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  {SLOT_SUGGESTIONS.map((slot) => (
-                    <button
-                      key={slot}
-                      type="button"
-                      onClick={() => setPreferredSlot(slot)}
-                      className={`min-h-[34px] px-2.5 py-1 rounded-lg border text-xs transition-colors ${
-                        preferredSlot === slot
-                          ? 'bg-[#FFFDF7] dark:bg-[#D6A84F]/20 border-[#D6A84F] text-[#171717] dark:text-[#D6A84F] font-semibold'
-                          : 'bg-white dark:bg-[#121212] border-[#E8DFC8] dark:border-[#2E2E2E] text-[#292929] dark:text-[#DDD6C7]'
-                      }`}
-                    >
-                      {slot}
-                    </button>
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="preferred-slot" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
-                      Custom visit slot
-                    </label>
-                    <input
-                      id="preferred-slot"
-                      type="text"
-                      maxLength={60}
-                      value={preferredSlot}
-                      onChange={(e) => setPreferredSlot(e.target.value)}
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="neighborhood" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
-                      City &amp; area ({region.name})
-                    </label>
-                    <input
-                      id="neighborhood"
-                      type="text"
-                      required
-                      maxLength={80}
-                      value={neighborhood}
-                      onChange={(e) => setNeighborhood(e.target.value)}
-                      placeholder="e.g., Madhapur, Hyderabad"
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
-                    />
-                  </div>
-                </div>
-              </div>
+      <div>
+        <label className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2.5">
+          Available appointment slots
+        </label>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {SLOT_SUGGESTIONS.map((slot) => (
+            <button
+              key={slot}
+              type="button"
+              onClick={() => setPreferredSlot(slot)}
+              className={`min-h-[38px] px-3 py-1.5 rounded-xl border text-xs transition-colors ${
+                preferredSlot === slot
+                  ? 'bg-[#FF9933]/14 border-[#FF9933] text-[#18231E] dark:text-[#FFD28A] font-semibold'
+                  : 'bg-[#FFFDF8] dark:bg-[#07130F] border-[#075E36]/15 dark:border-white/[0.10] text-[#43564D] dark:text-[#9CB0A6] hover:border-[#FF9933]/40'
+              }`}
+            >
+              {slot}
+            </button>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="preferred-slot" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
+              Custom visit slot
+            </label>
+            <input
+              id="preferred-slot"
+              type="text"
+              maxLength={60}
+              value={preferredSlot}
+              onChange={(e) => setPreferredSlot(e.target.value)}
+              className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
+            />
+          </div>
+          <div>
+            <label htmlFor="neighborhood" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
+              City &amp; area ({region.name})
+            </label>
+            <input
+              id="neighborhood"
+              type="text"
+              required
+              maxLength={80}
+              value={neighborhood}
+              onChange={(e) => setNeighborhood(e.target.value)}
+              placeholder="e.g., Madhapur, Hyderabad"
+              className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
+            />
+          </div>
+        </div>
+      </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-2">
-                  Preferred payment method
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {PAYMENT_METHOD_OPTIONS.map((pm) => {
-                    const active = paymentMethod === pm.id;
-                    return (
-                      <button
-                        key={pm.id}
-                        type="button"
-                        onClick={() => setPaymentMethod(pm.id)}
-                        className={`min-h-[44px] px-3 py-2 rounded-xl border text-left transition-colors ${
-                          active
-                            ? 'bg-[#FFFDF7] dark:bg-[#D6A84F]/20 border-[#D6A84F] text-[#171717] dark:text-[#D6A84F] font-semibold'
-                            : 'bg-white dark:bg-[#121212]/90 border-[#E8DFC8] dark:border-[#2E2E2E] text-[#292929] dark:text-[#E8E2D5] hover:border-slate-300 dark:hover:border-slate-600'
-                        }`}
-                      >
-                        <span className="block text-xs truncate">{pm.shortLabel}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+      <div>
+        <label className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2.5">
+          Preferred payment method
+        </label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {PAYMENT_METHOD_OPTIONS.map((pm) => {
+            const active = paymentMethod === pm.id;
+            return (
+              <button
+                key={pm.id}
+                type="button"
+                onClick={() => setPaymentMethod(pm.id)}
+                className={`min-h-[46px] px-3.5 py-2.5 rounded-xl border text-left transition-colors ${
+                  active
+                    ? 'bg-[#138808]/14 dark:bg-[#35C46A]/15 border-[#35C46A] text-[#138808] dark:text-[#7DFF9B] font-semibold'
+                    : 'bg-[#FFFDF8] dark:bg-[#07130F]/90 border-[#075E36]/15 dark:border-white/[0.10] text-[#43564D] dark:text-[#E8EDF2] hover:border-[#35C46A]/40'
+                }`}
+              >
+                <span className="block text-xs truncate">{pm.shortLabel}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-              <div className="pt-3 border-t border-[#E8DFC8] dark:border-[#2E2E2E] space-y-4">
-                <div className="flex items-center gap-2 text-xs text-[#292929] dark:text-[#DDD6C7]">
-                  <Lock className="w-3.5 h-3.5 text-[#8F6412] dark:text-[#D6A84F] shrink-0" />
-                  <span>
-                    Private phone &amp; address — revealed only to the technician assigned to your booking.
-                  </span>
-                </div>
+      <div className="pt-4 border-t border-[#075E36]/12 dark:border-white/[0.08] space-y-5">
+        <div className="flex items-center gap-2.5 text-xs text-[#43564D] dark:text-[#9CB0A6]">
+          <Lock className="w-4 h-4 text-[#138808] dark:text-[#35C46A] shrink-0" />
+          <span>
+            Private phone &amp; address — revealed only to the technician assigned to your booking.
+          </span>
+        </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="customer-name" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
-                      Your name
-                    </label>
-                    <input
-                      id="customer-name"
-                      type="text"
-                      required
-                      maxLength={60}
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="customer-phone" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
-                      Phone number ({region.dialCode})
-                    </label>
-                    <input
-                      id="customer-phone"
-                      type="tel"
-                      required
-                      maxLength={30}
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder={`${region.dialCode} 98765 43210`}
-                      className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
-                    />
-                  </div>
-                </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="customer-name" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2">
+              Your name
+            </label>
+            <input
+              id="customer-name"
+              type="text"
+              required
+              maxLength={60}
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
+            />
+          </div>
+          <div>
+            <label htmlFor="customer-phone" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2">
+              Phone number ({region.dialCode})
+            </label>
+            <input
+              id="customer-phone"
+              type="tel"
+              required
+              maxLength={30}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder={`${region.dialCode} 98765 43210`}
+              className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
+            />
+          </div>
+        </div>
 
-                <div>
-                  <label htmlFor="street-address" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
-                    House / Flat &amp; Street Address
-                  </label>
-                  <input
-                    id="street-address"
-                    type="text"
-                    required
-                    maxLength={180}
-                    value={streetAddress}
-                    onChange={(e) => setStreetAddress(e.target.value)}
-                    placeholder="Flat 4B, 218 Maple Street"
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
-                  />
-                </div>
+        <div>
+          <label htmlFor="street-address" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2">
+            House / Flat &amp; Street Address
+          </label>
+          <input
+            id="street-address"
+            type="text"
+            required
+            maxLength={180}
+            value={streetAddress}
+            onChange={(e) => setStreetAddress(e.target.value)}
+            placeholder="Flat 4B, 218 Maple Street"
+            className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
+          />
+        </div>
 
-                <div>
-                  <label htmlFor="access-note" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
-                    Landmark / Gate note (optional)
-                  </label>
-                  <input
-                    id="access-note"
-                    type="text"
-                    maxLength={200}
-                    value={accessNote}
-                    onChange={(e) => setAccessNote(e.target.value)}
-                    placeholder="Near main gate or call on arrival"
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
-                  />
-                </div>
-              </div>
+        <div>
+          <label htmlFor="access-note" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2">
+            Landmark / Gate note (optional)
+          </label>
+          <input
+            id="access-note"
+            type="text"
+            maxLength={200}
+            value={accessNote}
+            onChange={(e) => setAccessNote(e.target.value)}
+            placeholder="Near main gate or call on arrival"
+            className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
+          />
+        </div>
+      </div>
 
-              {formError ? (
-                <div className="rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 px-4 py-3 text-sm text-rose-800 dark:text-rose-200">
-                  {formError}
-                </div>
-              ) : null}
+      {formError ? (
+        <div className="rounded-xl bg-rose-500/15 border border-rose-500/30 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
+          {formError}
+        </div>
+      ) : null}
 
-              <div className="pt-2 pb-2 flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="min-h-[48px] px-4 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] text-sm font-medium text-[#292929] dark:text-[#E8E2D5] hover:bg-[#FFFDF7] dark:hover:bg-[#121212] transition-colors"
-                >
-                  {embedded ? 'Back' : 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting || mediaProcessing}
-                  className="flex-1 min-h-[48px] px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D6AE53] to-[#F3D58B] text-[#080808] text-sm font-bold hover:brightness-105 disabled:opacity-60 transition-all shadow-lg shadow-[#D6AE53]/20"
-                >
-                  {!isSignedIn
-                    ? 'Sign in with Google & Post Request'
-                    : submitting
-                      ? 'Posting request...'
-                      : 'Confirm Booking Request'}
-                </button>
-              </div>
-            </form>
+      <div className="pt-2 pb-2 flex items-center gap-3.5">
+        <button
+          type="button"
+          onClick={onClose}
+          className="min-h-[50px] px-5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] hover:bg-[#E8EDF2] dark:hover:bg-white/[0.06] transition-colors"
+        >
+          {embedded ? 'Back' : 'Cancel'}
+        </button>
+        <button
+          type="submit"
+          disabled={submitting || mediaProcessing}
+          className="flex-1 min-h-[50px] px-5 py-2.5 rounded-xl yn-btn-saffron text-sm font-bold disabled:opacity-60 transition-all"
+        >
+          {!isSignedIn
+            ? 'Sign in with Google & Post Request'
+            : submitting
+              ? 'Posting request...'
+              : 'Confirm Booking Request'}
+        </button>
+      </div>
+    </form>
   );
 
   if (embedded) {
     return open ? (
-      <div className="bg-white dark:bg-[#121212] rounded-3xl border border-[#E8DFC8] dark:border-[#222222] shadow-lg overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#EFE8D5] dark:border-[#222222] flex items-center justify-between gap-3">
+      <div className="yn-glass-card yn-tricolor-border rounded-3xl overflow-hidden">
+        <div className="px-6 py-4.5 border-b border-[#075E36]/12 dark:border-white/[0.08] flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-[#171717] dark:text-white font-display">
+            <h2 className="text-lg font-bold text-[#18231E] dark:text-[#FFFDF8] font-display">
               {targetTechnician
                 ? `Book ${targetTechnician.displayName}`
                 : 'Book a Home Repair Service'}
             </h2>
-            <p className="text-xs text-[#595959] dark:text-[#A0A0A0] mt-0.5">
+            <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] mt-0.5">
               {targetTechnician
                 ? `${targetTechnician.neighborhood} · Avg. ${targetTechnician.responseTimeMins}m arrival`
                 : `${region.name} (${currencyCode}) · ${availableTechCount} pros available nearby`}
@@ -727,7 +727,7 @@ export function RequestRepairSheet({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.16 }}
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#080808]/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#040B08]/75 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
           aria-labelledby="request-repair-title"
@@ -737,18 +737,18 @@ export function RequestRepairSheet({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 36, opacity: 0 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full sm:max-w-xl bg-white dark:bg-[#121212] rounded-t-3xl sm:rounded-3xl border border-[#E8DFC8] dark:border-[#222222] shadow-2xl max-h-[92vh] flex flex-col"
+            className="w-full sm:max-w-xl yn-glass-card yn-tricolor-border rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] flex flex-col"
           >
-            <div className="px-6 pt-3 pb-4 border-b border-[#EFE8D5] dark:border-[#222222] shrink-0">
-              <div className="w-10 h-1.5 bg-slate-300 dark:bg-[#262626] rounded-full mx-auto mb-3 sm:hidden" />
+            <div className="px-6 sm:px-7 pt-4 pb-5 border-b border-[#075E36]/12 dark:border-white/[0.08] shrink-0">
+              <div className="w-10 h-1.5 bg-[#075E36]/20 dark:bg-white/[0.15] rounded-full mx-auto mb-3.5 sm:hidden" />
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 id="request-repair-title" className="text-lg font-semibold text-[#171717] dark:text-white">
+                  <h2 id="request-repair-title" className="text-lg font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                     {targetTechnician
                       ? `Request repair with ${targetTechnician.displayName}`
                       : 'Book a home repair service'}
                   </h2>
-                  <p className="text-xs text-[#595959] dark:text-[#A0A0A0] mt-0.5">
+                  <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] mt-0.5">
                     {targetTechnician
                       ? `${targetTechnician.neighborhood} · Avg. ${targetTechnician.responseTimeMins}m response`
                       : `${region.name} (${currencyCode}) · ${availableTechCount} pros available nearby`}
@@ -758,7 +758,7 @@ export function RequestRepairSheet({
                   type="button"
                   onClick={onClose}
                   aria-label="Close repair request form"
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#595959] dark:text-[#A0A0A0] hover:text-[#171717] dark:hover:text-white hover:bg-[#FFFDF7] dark:hover:bg-[#1A1A1A] transition-colors"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#43564D] dark:text-[#9CB0A6] hover:text-[#18231E] dark:hover:text-[#FFFDF8] hover:bg-[#FF9933]/10 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>

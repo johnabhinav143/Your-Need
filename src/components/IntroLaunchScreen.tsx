@@ -23,6 +23,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import goldDesertLoginBg from '../assets/images/gold_desert_login_bg_1795253092151.jpg';
 import { CountryRegion } from '../i18n/regions';
 import { AccountCategory, LoginIntentMeta } from '../types';
+import { BrandLogoMark } from './BrandLogo';
 import { Intro3DStage } from './Intro3DStage';
 
 const GOLD_INTRO_VIDEO_SRC = '/assets/your_need_intro_login_gold.mp4';
@@ -86,6 +87,7 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
   const [progressPct, setProgressPct] = useState(0);
   const [resetTrigger, setResetTrigger] = useState(0);
   const [spinHintActive, setSpinHintActive] = useState(false);
+  const [logoBoostCount, setLogoBoostCount] = useState(0);
 
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'quick'>('login');
   const [accountType, setAccountType] = useState<AccountCategory>('customer');
@@ -150,6 +152,7 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
 
   const handleEmblemTap = () => {
     setSpinHintActive(true);
+    setLogoBoostCount((c) => c + 1);
     window.setTimeout(() => setSpinHintActive(false), 900);
   };
 
@@ -166,29 +169,39 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className={`fixed inset-0 z-50 h-[100dvh] w-screen overflow-y-auto overflow-x-hidden overscroll-y-contain flex items-start sm:items-center justify-center sm:p-4 ${
-            isDark ? 'bg-[#050506]' : 'bg-[#EAE0CA]'
+            isDark ? 'bg-[#07130F]' : 'bg-[#E8EDF2]'
           }`}
           role="dialog"
           aria-modal="true"
           aria-label="Welcome to Your Need"
         >
-          {/* Centered Mobile-Suitable Portrait Gold Desert Stage (Comfortably Scrollable) */}
+          {/* Ambient Tricolour Backdrop Glows */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed -top-24 -left-24 w-96 h-96 rounded-full bg-[#E87516]/20 blur-3xl"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none fixed -bottom-24 -right-24 w-96 h-96 rounded-full bg-[#075E36]/30 blur-3xl"
+          />
+
+          {/* Centered Mobile-Suitable Portrait Tricolour Sanctuary Stage */}
           <motion.div
             initial={{ opacity: 0, y: 18, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
-            className="relative my-auto w-full min-h-[100dvh] sm:min-h-[min(92dvh,800px)] sm:w-[430px] sm:max-w-[94vw] sm:rounded-[2rem] overflow-hidden sm:border sm:border-[#D6A84F]/55 sm:shadow-[0_24px_80px_rgba(0,0,0,0.75)] bg-[#08080A] text-[#F4ECE0] flex flex-col justify-between"
+            className="relative my-auto w-full min-h-[100dvh] sm:min-h-[min(92dvh,800px)] sm:w-[430px] sm:max-w-[94vw] sm:rounded-[2rem] overflow-hidden yn-tricolor-border sm:shadow-[0_28px_84px_rgba(0,0,0,0.85)] bg-[#07130F] text-[#FFFDF8] flex flex-col justify-between"
           >
-            {/* Base Gold Desert Image Layer (always crisp behind video & 3D) */}
+            {/* Base Atmospheric Image Layer */}
             <img
               src={goldDesertLoginBg}
-              alt="Golden Desert Luxury Backdrop"
+              alt="YourNeed Atmospheric Backdrop"
               referrerPolicy="no-referrer"
-              className="absolute inset-0 w-full h-full object-cover object-center opacity-85"
+              className="absolute inset-0 w-full h-full object-cover object-center opacity-55 mix-blend-luminosity"
             />
 
-            {/* Video Reel OR Interactive 3D Gold Desert Sanctuary */}
+            {/* Video Reel OR Interactive 3D Tricolour Hub */}
             <div className="absolute inset-0">
               {stageMode === 'video' && !videoFailed ? (
                 <video
@@ -202,7 +215,7 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                   preload="auto"
                   onTimeUpdate={handleTimeUpdate}
                   onError={() => setVideoFailed(true)}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover opacity-75"
                 />
               ) : stageMode === '3d' ? (
                 <Intro3DStage
@@ -215,27 +228,28 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                 />
               ) : null}
 
-              {/* Measured Obsidian & Gold Contrast Scrim */}
-              <div className="absolute inset-0 bg-gradient-to-b from-[#08080A]/85 via-[#08080A]/25 to-[#08080A]/96 pointer-events-none" />
+              {/* Deep Emerald-Obsidian Contrast Scrim */}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#07130F]/92 via-[#071B16]/40 to-[#07130F]/96 pointer-events-none" />
+              <div className="absolute inset-x-0 top-0 h-[2px] yn-tricolor-bar pointer-events-none" />
             </div>
 
             {/* Minimal Top Bar Controls */}
-            <div className="relative z-10 shrink-0 px-3.5 pt-3 flex items-center justify-between gap-2 pointer-events-none">
-              <div className="flex items-center gap-1.5 pointer-events-auto">
+            <div className="relative z-10 shrink-0 px-4 pt-4 flex items-center justify-between gap-2.5 pointer-events-none">
+              <div className="flex items-center gap-2 pointer-events-auto">
                 <button
                   type="button"
                   onClick={() => setStageMode((m) => (m === 'video' ? '3d' : 'video'))}
-                  aria-label={stageMode === 'video' ? 'Switch to 3D interactive view' : 'Watch gold desert intro video'}
-                  className="min-h-[40px] px-3 rounded-xl bg-[#0D0D10]/90 border border-[#D6A84F]/45 text-[#F3D999] hover:border-[#F3D999] transition-colors flex items-center gap-1.5 text-xs font-semibold"
+                  aria-label={stageMode === 'video' ? 'Switch to 3D interactive view' : 'Watch intro video'}
+                  className="min-h-[40px] px-3 rounded-xl bg-[#071B16]/90 backdrop-blur-md border border-[#FF9933]/40 text-[#FFD28A] hover:border-[#FF9933] transition-colors flex items-center gap-1.5 text-xs font-semibold shadow-md"
                 >
                   {stageMode === 'video' ? (
                     <>
-                      <Box className="w-3.5 h-3.5 text-[#D6A84F]" />
+                      <Box className="w-3.5 h-3.5 text-[#FF9933]" />
                       <span>3D View</span>
                     </>
                   ) : (
                     <>
-                      <Film className="w-3.5 h-3.5 text-[#D6A84F]" />
+                      <Film className="w-3.5 h-3.5 text-[#35C46A]" />
                       <span>Video</span>
                     </>
                   )}
@@ -246,9 +260,9 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                     type="button"
                     onClick={() => setResetTrigger((n) => n + 1)}
                     aria-label="Reset 3D camera view"
-                    className="min-h-[40px] min-w-[40px] rounded-xl bg-[#0D0D10]/90 border border-[#D6A84F]/30 text-[#F3D999] hover:border-[#D6A84F] transition-colors flex items-center justify-center"
+                    className="min-h-[40px] min-w-[40px] rounded-xl bg-[#071B16]/90 backdrop-blur-md border border-[#35C46A]/35 text-[#FFFDF8] hover:border-[#35C46A] transition-colors flex items-center justify-center"
                   >
-                    <RotateCcw className="w-4 h-4 text-[#D6A84F]" />
+                    <RotateCcw className="w-4 h-4 text-[#35C46A]" />
                   </button>
                 ) : !videoFailed ? (
                   <>
@@ -256,21 +270,21 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                       type="button"
                       onClick={handleToggleMute}
                       aria-label={isMuted ? 'Unmute intro audio' : 'Mute intro audio'}
-                      className="min-h-[40px] min-w-[40px] rounded-xl bg-[#0D0D10]/90 border border-[#D6A84F]/30 text-[#F3D999] hover:border-[#D6A84F] transition-colors flex items-center justify-center"
+                      className="min-h-[40px] min-w-[40px] rounded-xl bg-[#071B16]/90 backdrop-blur-md border border-white/15 text-[#FFFDF8] hover:border-[#FF9933]/60 transition-colors flex items-center justify-center"
                     >
                       {isMuted ? (
-                        <VolumeX className="w-4 h-4 text-[#D6A84F]" />
+                        <VolumeX className="w-4 h-4 text-[#FFB866]" />
                       ) : (
-                        <Volume2 className="w-4 h-4 text-[#D6A84F]" />
+                        <Volume2 className="w-4 h-4 text-[#35C46A]" />
                       )}
                     </button>
                     <button
                       type="button"
                       onClick={handleReplayVideo}
                       aria-label="Replay intro video"
-                      className="min-h-[40px] min-w-[40px] rounded-xl bg-[#0D0D10]/90 border border-[#D6A84F]/30 text-[#F3D999] hover:border-[#D6A84F] transition-colors flex items-center justify-center"
+                      className="min-h-[40px] min-w-[40px] rounded-xl bg-[#071B16]/90 backdrop-blur-md border border-white/15 text-[#FFFDF8] hover:border-[#FF9933]/60 transition-colors flex items-center justify-center"
                     >
-                      <RotateCcw className="w-4 h-4 text-[#D6A84F]" />
+                      <RotateCcw className="w-4 h-4 text-[#FFB866]" />
                     </button>
                   </>
                 ) : null}
@@ -278,13 +292,13 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                 <button
                   type="button"
                   onClick={onToggleTheme}
-                  aria-label={isDark ? 'Switch to warm gold day mode' : 'Switch to obsidian gold night mode'}
-                  className="min-h-[40px] min-w-[40px] rounded-xl bg-[#0D0D10]/90 border border-[#D6A84F]/30 text-[#F3D999] hover:border-[#D6A84F] transition-colors flex items-center justify-center"
+                  aria-label={isDark ? 'Switch to daylight ivory mode' : 'Switch to darkened emerald night mode'}
+                  className="min-h-[40px] min-w-[40px] rounded-xl bg-[#071B16]/90 backdrop-blur-md border border-white/15 text-[#FFFDF8] hover:border-[#35C46A]/60 transition-colors flex items-center justify-center"
                 >
                   {isDark ? (
-                    <Sun className="w-4 h-4 text-[#D6A84F]" />
+                    <Sun className="w-4 h-4 text-[#FFB866]" />
                   ) : (
-                    <Moon className="w-4 h-4 text-[#D6A84F]" />
+                    <Moon className="w-4 h-4 text-[#35C46A]" />
                   )}
                 </button>
               </div>
@@ -292,26 +306,42 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
               <button
                 type="button"
                 onClick={() => onContinueToApp(selectedRole)}
-                className="pointer-events-auto min-h-[40px] px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#D6A84F] to-[#F3D999] text-[#08080A] text-xs font-bold hover:brightness-105 transition-all flex items-center gap-1 whitespace-nowrap shrink-0 shadow-md shadow-[#D6A84F]/25"
+                className="pointer-events-auto min-h-[40px] px-3.5 py-1.5 rounded-xl yn-btn-saffron text-xs flex items-center gap-1 whitespace-nowrap shrink-0"
               >
                 <span>Enter</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Upper Luxury Brand Title Lockup */}
-            <div className="relative z-10 shrink-0 px-5 pt-1.5 text-center pointer-events-none select-none">
+            {/* Upper Luxury Tricolour Brand Title Lockup */}
+            <div className="relative z-10 shrink-0 px-5 pt-1 text-center select-none">
+              <div className="flex justify-center mb-1.5 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={handleEmblemTap}
+                  aria-label="Replay Your Need logo animation"
+                  className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF9933]"
+                >
+                  <BrandLogoMark
+                    size="md"
+                    animated={open}
+                    interactive={true}
+                    boostSignal={logoBoostCount}
+                  />
+                </button>
+              </div>
+
               <motion.p
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
-                className="text-[11px] font-semibold tracking-wider text-[#F3D999]"
+                className="text-[11px] font-semibold tracking-wider text-[#FFD28A] pointer-events-none"
               >
-                {region.name} · {currencyCode} · Private Concierge
+                {region.name} · {currencyCode} · Verified Home Concierge
               </motion.p>
 
               <div
-                className="flex items-center justify-center gap-2.5 mt-1 leading-none"
+                className="flex items-center justify-center gap-2.5 mt-1 leading-none pointer-events-none"
                 style={{ perspective: 800 }}
               >
                 <div className="flex items-center">
@@ -326,7 +356,7 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                         damping: 20,
                         delay: 0.05 + i * 0.05,
                       }}
-                      className="inline-block font-brand text-3xl sm:text-4xl font-extrabold tracking-wide text-[#FFF8EA] drop-shadow"
+                      className="inline-block font-brand text-3xl sm:text-4xl font-extrabold tracking-wide text-[#FFFDF8] drop-shadow-[0_2px_10px_rgba(255,153,51,0.3)]"
                     >
                       {ch}
                     </motion.span>
@@ -344,7 +374,7 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                         damping: 20,
                         delay: 0.24 + i * 0.05,
                       }}
-                      className="inline-block font-brand text-3xl sm:text-4xl font-extrabold tracking-wide bg-gradient-to-r from-[#F3D999] via-[#D6A84F] to-[#F3D999] bg-clip-text text-transparent animate-brand-gradient"
+                      className="inline-block font-brand text-3xl sm:text-4xl font-extrabold tracking-wide bg-gradient-to-r from-[#FF9933] via-[#FFFDF8] to-[#35C46A] bg-clip-text text-transparent animate-brand-gradient"
                     >
                       {ch}
                     </motion.span>
@@ -356,25 +386,25 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.45 }}
-                className="mt-1 text-xs font-medium text-[#E5D7BE]"
+                className="mt-1 text-xs font-medium text-[#E8EDF2]/85"
               >
                 {stageMode === '3d'
                   ? spinHintActive
-                    ? 'Golden Sanctuary Spin Boosted'
-                    : 'Drag to orbit 3D Gold Desert · Tap emblem'
-                  : 'Luxury Home Appliance & Engineering Care'}
+                    ? '3D Tricolour Sanctuary Boosted'
+                    : 'Drag to orbit 3D Stage · Tap emblem'
+                  : 'Find Everything You Need, In One Place.'}
               </motion.p>
             </div>
 
             {/* Open Center Stage for Video / 3D Orbiting */}
             <div className="flex-1 min-h-0 pointer-events-none" />
 
-            {/* Lower Concierge Info + Multi-Option Black & Gold Auth Console */}
-            <div className="relative z-10 shrink-0 px-4 pb-5 pb-safe space-y-3 pointer-events-none">
+            {/* Lower Concierge Info + Multi-Option Tricolour Auth Console */}
+            <div className="relative z-10 shrink-0 px-5 pb-6 pb-safe space-y-3.5 pointer-events-none">
               {stageMode === 'video' && !videoFailed ? (
-                <div className="h-1 w-full rounded-full bg-[#D6A84F]/20 overflow-hidden">
+                <div className="h-1 w-full rounded-full bg-[#101A17] overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-[#9E7628] via-[#D6A84F] to-[#F3D999] transition-[width] duration-150"
+                    className="h-full bg-gradient-to-r from-[#E87516] via-[#FFFDF8] to-[#35C46A] transition-[width] duration-150"
                     style={{ width: `${progressPct}%` }}
                   />
                 </div>
@@ -385,27 +415,27 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.35 }}
-                className="pointer-events-auto rounded-2xl bg-[#0C0C0F]/92 border border-[#D6A84F]/35 px-3.5 py-2.5 space-y-1.5 shadow-lg"
+                className="pointer-events-auto rounded-2xl bg-[#071B16]/90 backdrop-blur-md border border-[#35C46A]/25 px-4 py-3 space-y-2 shadow-lg"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     {CONCIERGE_HIGHLIGHTS.map((item, idx) => (
                       <button
                         key={item.id}
                         type="button"
                         onClick={() => setInfoIdx(idx)}
-                        className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-colors ${
+                        className={`min-h-[28px] px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
                           infoIdx === idx
-                            ? 'bg-[#D6A84F] text-[#08080A]'
-                            : 'text-[#CBBBA0] hover:text-[#F3D999]'
+                            ? 'bg-[#FF9933] text-[#07130F] font-bold'
+                            : 'text-[#E8EDF2]/75 hover:text-[#FFD28A]'
                         }`}
                       >
                         {item.tabLabel}
                       </button>
                     ))}
                   </div>
-                  <span className="text-[11px] text-[#D6A84F] font-medium flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5" />
+                  <span className="text-[11px] text-[#7DFF9B] font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#35C46A]" />
                     <span>Vetted</span>
                   </span>
                 </div>
@@ -418,25 +448,25 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                     exit={{ opacity: 0, y: -6, filter: 'blur(6px)' }}
                     transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <p className="font-display text-sm font-semibold text-[#F3D999] leading-tight">
+                    <p className="font-display text-sm font-semibold text-[#FFD28A] leading-tight">
                       {activeInfo.headline}
                     </p>
-                    <p className="text-[11px] text-[#DDD2BE] leading-snug mt-0.5 line-clamp-2">
+                    <p className="text-[11px] text-[#E8EDF2]/85 leading-snug mt-1 line-clamp-2">
                       {activeInfo.detail}
                     </p>
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
 
-              {/* Black + Gold Multi-Option Sign In / Sign Up Console */}
+              {/* Frosted Deep Emerald + Saffron Multi-Option Sign In / Sign Up Console */}
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.28, duration: 0.35 }}
-                className="pointer-events-auto rounded-2xl bg-[#0D0D10] text-[#F4ECE0] border border-[#D6A84F]/45 p-3.5 shadow-2xl space-y-2.5"
+                className="pointer-events-auto rounded-2xl bg-[#071B16]/95 backdrop-blur-xl text-[#FFFDF8] border border-[#FF9933]/35 p-4.5 shadow-[0_20px_50px_rgba(0,0,0,0.85)] space-y-3.5"
               >
                 {authError ? (
-                  <div className="rounded-xl bg-[#2A1414] border border-[#D6A84F]/45 px-3 py-1.5 text-xs text-[#F3D999]">
+                  <div className="rounded-xl bg-[#2A1414] border border-[#FF9933]/45 px-3 py-1.5 text-xs text-[#FFD28A]">
                     {authError}
                   </div>
                 ) : null}
@@ -444,15 +474,15 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                 {isAuthenticated ? (
                   <>
                     <div className="text-center space-y-0.5">
-                      <p className="text-[11px] font-semibold text-[#D6A84F]">
+                      <p className="text-[11px] font-semibold text-[#7DFF9B]">
                         Signed in{userDisplayName ? ` as ${userDisplayName}` : ''}
                       </p>
-                      <h2 className="font-display text-lg font-semibold text-[#FFF8EA]">
-                        Welcome Back to Your Need
+                      <h2 className="font-display text-lg font-semibold text-[#FFFDF8]">
+                        Welcome Back to YourNeed
                       </h2>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#16161A] border border-[#D6A84F]/30">
+                    <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[#101A17] border border-white/10">
                       {(['customer', 'technician'] as const).map((roleOpt) => {
                         const active = selectedRole === roleOpt;
                         return (
@@ -462,8 +492,10 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                             onClick={() => setAccountType(roleOpt)}
                             className={`min-h-[34px] px-2 rounded-lg text-xs font-semibold transition-colors ${
                               active
-                                ? 'bg-[#D6A84F] text-[#08080A]'
-                                : 'text-[#CBBBA0] hover:text-[#FFF8EA]'
+                                ? roleOpt === 'technician'
+                                  ? 'bg-[#138808] text-[#FFFDF8] font-bold'
+                                  : 'bg-[#FF9933] text-[#07130F] font-bold'
+                                : 'text-[#E8EDF2]/75 hover:text-[#FFFDF8]'
                             }`}
                           >
                             {roleOpt === 'customer' ? 'Customer' : 'Technician'}
@@ -475,7 +507,9 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                     <button
                       type="button"
                       onClick={() => onContinueToApp(selectedRole)}
-                      className="relative overflow-hidden w-full min-h-[42px] px-4 py-2 rounded-xl bg-gradient-to-r from-[#D6A84F] via-[#F3D999] to-[#D6A84F] text-[#08080A] text-sm font-bold hover:brightness-105 transition-all flex items-center justify-center gap-2"
+                      className={`w-full min-h-[42px] px-4 py-2 rounded-xl text-sm flex items-center justify-center gap-2 ${
+                        selectedRole === 'technician' ? 'yn-btn-emerald' : 'yn-btn-saffron'
+                      }`}
                     >
                       <span>
                         {selectedRole === 'technician'
@@ -488,7 +522,7 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                 ) : (
                   <>
                     {/* 3-Way Auth Mode Switcher: Log In | Sign Up | Quick Access */}
-                    <div className="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[#16161A] border border-[#D6A84F]/30">
+                    <div className="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-[#101A17] border border-white/10">
                       {(
                         [
                           { id: 'login', label: 'Log In' },
@@ -502,15 +536,15 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                             key={mode.id}
                             type="button"
                             onClick={() => setAuthMode(mode.id)}
-                            className={`relative z-10 min-h-[32px] px-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap ${
-                              active ? 'text-[#08080A] font-bold' : 'text-[#CBBBA0] hover:text-[#FFF8EA]'
+                            className={`relative z-10 min-h-[36px] px-2.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap ${
+                              active ? 'text-[#07130F] font-bold' : 'text-[#E8EDF2]/75 hover:text-[#FFFDF8]'
                             }`}
                           >
                             {active ? (
                               <motion.span
                                 layoutId="portrait-3d-auth-mode"
                                 transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                                className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#D6A84F] to-[#F3D999] -z-10"
+                                className="absolute inset-0 rounded-lg bg-gradient-to-r from-[#FF9933] to-[#FFD28A] -z-10"
                               />
                             ) : null}
                             {mode.label}
@@ -525,23 +559,23 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                         initial={{ opacity: 0, y: 6 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="space-y-2"
+                        className="space-y-2.5"
                       >
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-2.5">
                           <button
                             type="button"
                             onClick={() => onContinueToApp('customer')}
-                            className="min-h-[42px] px-3 py-2 rounded-xl border border-[#D6A84F]/45 bg-[#16161A] hover:border-[#F3D999] text-xs font-semibold text-[#FFF8EA] flex items-center justify-center gap-1.5 transition-colors"
+                            className="min-h-[44px] px-3.5 py-2 rounded-xl border border-[#35C46A]/35 bg-[#101A17] hover:border-[#35C46A] text-xs font-semibold text-[#FFFDF8] flex items-center justify-center gap-1.5 transition-colors"
                           >
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#D6A84F]" />
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#35C46A]" />
                             <span>Guest Browse</span>
                           </button>
                           <button
                             type="button"
                             onClick={onOpenAiAssistant}
-                            className="min-h-[42px] px-3 py-2 rounded-xl border border-[#D6A84F]/45 bg-[#16161A] hover:border-[#F3D999] text-xs font-semibold text-[#F3D999] flex items-center justify-center gap-1.5 transition-colors"
+                            className="min-h-[44px] px-3.5 py-2 rounded-xl border border-[#FF9933]/35 bg-[#101A17] hover:border-[#FF9933] text-xs font-semibold text-[#FFD28A] flex items-center justify-center gap-1.5 transition-colors"
                           >
-                            <Bot className="w-3.5 h-3.5 text-[#D6A84F]" />
+                            <Bot className="w-3.5 h-3.5 text-[#FF9933]" />
                             <span>AI Diagnosis</span>
                           </button>
                         </div>
@@ -557,7 +591,7 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                               organizationName: orgInput.trim(),
                             })
                           }
-                          className="relative overflow-hidden w-full min-h-[42px] px-4 py-2 rounded-xl bg-gradient-to-r from-[#D6A84F] via-[#F3D999] to-[#D6A84F] text-[#08080A] text-sm font-bold flex items-center justify-center gap-2"
+                          className="w-full min-h-[44px] px-4 py-2.5 rounded-xl yn-btn-saffron text-sm flex items-center justify-center gap-2"
                         >
                           <Sparkles className="w-4 h-4 shrink-0" />
                           <span>{authLoading ? 'Opening...' : '1-Tap Google Express Sign In'}</span>
@@ -566,14 +600,14 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                     ) : (
                       <>
                         {/* Account Type Selector: Customer / Technician / Organization */}
-                        <div className="grid grid-cols-3 gap-1.5">
+                        <div className="grid grid-cols-3 gap-2">
                           <button
                             type="button"
                             onClick={() => setAccountType('customer')}
-                            className={`min-h-[34px] px-2 py-1 rounded-xl border text-[11px] font-semibold transition-all ${
+                            className={`min-h-[38px] px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold transition-all ${
                               accountType === 'customer'
-                                ? 'bg-[#17171B] border-[#D6A84F] text-[#F3D999] shadow-sm shadow-[#D6A84F]/15'
-                                : 'border-[#2E2A22] text-[#A89B84] hover:text-[#FFF8EA]'
+                                ? 'bg-[#101A17] border-[#FF9933] text-[#FFD28A] shadow-sm shadow-[#FF9933]/15'
+                                : 'border-white/10 text-[#E8EDF2]/70 hover:text-[#FFFDF8]'
                             }`}
                           >
                             Customer
@@ -581,10 +615,10 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                           <button
                             type="button"
                             onClick={() => setAccountType('technician')}
-                            className={`min-h-[34px] px-2 py-1 rounded-xl border text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
+                            className={`min-h-[38px] px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
                               accountType === 'technician'
-                                ? 'bg-[#17171B] border-[#D6A84F] text-[#F3D999] shadow-sm shadow-[#D6A84F]/15'
-                                : 'border-[#2E2A22] text-[#A89B84] hover:text-[#FFF8EA]'
+                                ? 'bg-[#101A17] border-[#35C46A] text-[#7DFF9B] shadow-sm shadow-[#35C46A]/15'
+                                : 'border-white/10 text-[#E8EDF2]/70 hover:text-[#FFFDF8]'
                             }`}
                           >
                             <Wrench className="w-3 h-3" />
@@ -593,10 +627,10 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                           <button
                             type="button"
                             onClick={() => setAccountType('organization')}
-                            className={`min-h-[34px] px-2 py-1 rounded-xl border text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
+                            className={`min-h-[38px] px-2.5 py-1.5 rounded-xl border text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${
                               accountType === 'organization'
-                                ? 'bg-[#17171B] border-[#D6A84F] text-[#F3D999] shadow-sm shadow-[#D6A84F]/15'
-                                : 'border-[#2E2A22] text-[#A89B84] hover:text-[#FFF8EA]'
+                                ? 'bg-[#101A17] border-[#FF9933] text-[#FFD28A] shadow-sm shadow-[#FF9933]/15'
+                                : 'border-white/10 text-[#E8EDF2]/70 hover:text-[#FFFDF8]'
                             }`}
                           >
                             <Building2 className="w-3 h-3" />
@@ -605,7 +639,7 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                         </div>
 
                         {/* Phone + Optional Organization Input */}
-                        <div className={accountType === 'organization' ? 'grid grid-cols-2 gap-1.5' : ''}>
+                        <div className={accountType === 'organization' ? 'grid grid-cols-2 gap-2' : ''}>
                           {accountType === 'organization' ? (
                             <input
                               type="text"
@@ -614,11 +648,11 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                               onChange={(e) => setOrgInput(e.target.value)}
                               placeholder="Organization name"
                               aria-label="Organization name"
-                              className="w-full min-h-[36px] px-2.5 py-1 rounded-xl border border-[#3B3324] bg-[#16161A] text-xs text-[#FFF8EA] placeholder:text-[#8E816B] focus:outline-none focus:border-[#D6A84F]"
+                              className="w-full min-h-[40px] px-3 py-1.5 rounded-xl border border-white/15 bg-[#101A17] text-xs text-[#FFFDF8] placeholder:text-[#E8EDF2]/45 focus:outline-none focus:border-[#FF9933]"
                             />
                           ) : null}
                           <div className="relative flex items-center">
-                            <Phone className="w-3.5 h-3.5 text-[#D6A84F] absolute left-2.5 pointer-events-none" />
+                            <Phone className="w-3.5 h-3.5 text-[#FF9933] absolute left-3 pointer-events-none" />
                             <input
                               type="tel"
                               maxLength={30}
@@ -626,12 +660,12 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                               onChange={(e) => setPhoneInput(e.target.value)}
                               placeholder={`Phone (${region.dialCode})`}
                               aria-label="Phone number"
-                              className="w-full min-h-[36px] pl-8 pr-2.5 py-1 rounded-xl border border-[#3B3324] bg-[#16161A] text-xs tabular-nums text-[#FFF8EA] placeholder:text-[#8E816B] focus:outline-none focus:border-[#D6A84F]"
+                              className="w-full min-h-[40px] pl-8.5 pr-3 py-1.5 rounded-xl border border-white/15 bg-[#101A17] text-xs tabular-nums text-[#FFFDF8] placeholder:text-[#E8EDF2]/45 focus:outline-none focus:border-[#FF9933]"
                             />
                           </div>
                         </div>
 
-                        {/* Primary Gold Luxury CTA with Sheen Sweep */}
+                        {/* Primary Saffron / Emerald CTA with Sheen Sweep */}
                         <motion.button
                           type="button"
                           whileTap={{ scale: 0.98 }}
@@ -644,11 +678,13 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                               organizationName: orgInput.trim(),
                             })
                           }
-                          className="relative overflow-hidden w-full min-h-[42px] px-4 py-2 rounded-xl bg-gradient-to-r from-[#C8963E] via-[#F3D999] to-[#D6A84F] text-[#08080A] text-sm font-bold hover:brightness-105 disabled:opacity-60 transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#D6A84F]/20"
+                          className={`w-full min-h-[46px] px-4 py-2.5 rounded-xl text-sm disabled:opacity-60 flex items-center justify-center gap-2 ${
+                            selectedRole === 'technician' ? 'yn-btn-emerald' : 'yn-btn-saffron'
+                          }`}
                         >
                           <span
                             aria-hidden="true"
-                            className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-white/35 blur-sm animate-gold-sheen"
+                            className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-white/30 blur-sm animate-gold-sheen"
                           />
                           {authMode === 'login' ? (
                             <LogIn className="w-4 h-4 shrink-0 relative z-10" />
@@ -667,21 +703,21 @@ export const IntroLaunchScreen: React.FC<IntroLaunchScreenProps> = ({
                     )}
 
                     {/* Secondary Footer Actions */}
-                    <div className="flex items-center justify-between gap-2 pt-0.5 text-xs">
+                    <div className="flex items-center justify-between gap-2 pt-1 text-xs">
                       <button
                         type="button"
                         onClick={onOpenAiAssistant}
-                        className="min-h-[34px] px-2 py-1 rounded-lg font-semibold text-[#F3D999] hover:underline flex items-center gap-1"
+                        className="min-h-[36px] px-2.5 py-1 rounded-lg font-semibold text-[#FFD28A] hover:underline flex items-center gap-1.5"
                       >
-                        <Bot className="w-3.5 h-3.5 text-[#D6A84F]" />
+                        <Bot className="w-3.5 h-3.5 text-[#FF9933]" />
                         <span>AI Assistant</span>
                       </button>
                       <button
                         type="button"
                         onClick={onOpenHelp}
-                        className="min-h-[34px] px-2 py-1 rounded-lg font-medium text-[#CBBBA0] hover:text-[#F3D999] flex items-center gap-1"
+                        className="min-h-[36px] px-2.5 py-1 rounded-lg font-medium text-[#E8EDF2]/80 hover:text-[#7DFF9B] flex items-center gap-1.5"
                       >
-                        <HelpCircle className="w-3.5 h-3.5" />
+                        <HelpCircle className="w-3.5 h-3.5 text-[#35C46A]" />
                         <span>Trust &amp; Policies</span>
                       </button>
                     </div>

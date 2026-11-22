@@ -684,6 +684,24 @@ export async function markNotificationRead(notifId: string): Promise<void> {
   }
 }
 
+export async function markAllNotificationsRead(notifIds: string[]): Promise<void> {
+  const uniqueIds = Array.from(new Set(notifIds.filter((id) => Boolean(id) && !id.startsWith('local_'))));
+  if (uniqueIds.length === 0) return;
+
+  try {
+    for (let i = 0; i < uniqueIds.length; i += 450) {
+      const batch = writeBatch(db);
+      const chunk = uniqueIds.slice(i, i + 450);
+      for (const notifId of chunk) {
+        batch.update(doc(db, 'notifications', notifId), { read: true });
+      }
+      await batch.commit();
+    }
+  } catch (error) {
+    handleFirestoreError(error, OperationType.UPDATE, 'notifications/batch');
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Repair Jobs & Isolated Contacts
 // ---------------------------------------------------------------------------
@@ -785,7 +803,11 @@ export async function createRepairJobWithContact(params: {
   }
 }
 
-export async function cancelRepairJob(jobId: string, reason = 'Cancelled by customer'): Promise<void> {
+export async function cancelRepairJob(
+  jobId: string,
+  reason = 'Cancelled by customer',
+  notifyMeta?: { customerId: string; technicianId?: string; issueTitle?: string }
+): Promise<void> {
   const path = `repair_jobs/${jobId}`;
   try {
     await updateDoc(doc(db, 'repair_jobs', jobId), {
@@ -793,6 +815,16 @@ export async function cancelRepairJob(jobId: string, reason = 'Cancelled by cust
       cancellationReason: clampString(reason, 200),
       updatedAt: serverTimestamp(),
     });
+    if (notifyMeta?.technicianId && notifyMeta.customerId) {
+      await createNotification({
+        recipientId: notifyMeta.technicianId,
+        senderId: notifyMeta.customerId,
+        jobId,
+        title: 'Repair Booking Cancelled',
+        body: `Customer cancelled "${notifyMeta.issueTitle || 'repair request'}": ${clampString(reason, 120)}`,
+        type: 'status',
+      });
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.UPDATE, path);
   }
@@ -1037,6 +1069,22 @@ export async function sendJobMessage(params: {
       text: cleanText,
       createdAt: serverTimestamp(),
     });
+    const recipientId =
+      params.senderRole === 'customer' ? params.technicianId : params.customerId;
+    if (recipientId && recipientId !== params.senderId && !recipientId.startsWith('sample-')) {
+      try {
+        await createNotification({
+          recipientId,
+          senderId: params.senderId,
+          jobId: params.jobId,
+          title: `New Message from ${clampString(params.senderName, 40) || 'Member'}`,
+          body: cleanText.slice(0, 160),
+          type: 'system',
+        });
+      } catch {
+        // Non-fatal if chat notification fails
+      }
+    }
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, path);
   }

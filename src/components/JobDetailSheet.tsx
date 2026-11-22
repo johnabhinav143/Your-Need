@@ -218,7 +218,7 @@ export function JobDetailSheet({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.16 }}
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#171717]/55 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#040B08]/75 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
           aria-labelledby="job-detail-title"
@@ -228,20 +228,20 @@ export function JobDetailSheet({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 36, opacity: 0 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full sm:max-w-xl bg-white dark:bg-[#171717] rounded-t-3xl sm:rounded-2xl border border-[#E8DFC8] dark:border-[#2E2E2E] shadow-xl max-h-[92vh] flex flex-col"
+            className="w-full sm:max-w-xl yn-glass-card yn-tricolor-border rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] flex flex-col"
           >
-            <div className="px-6 pt-3 pb-4 border-b border-[#EFE8D5] dark:border-[#2E2E2E] shrink-0">
-              <div className="w-10 h-1.5 bg-slate-300 dark:bg-[#262626] rounded-full mx-auto mb-3 sm:hidden" />
+            <div className="px-6 sm:px-7 pt-4 pb-5 border-b border-[#075E36]/12 dark:border-white/[0.08] shrink-0">
+              <div className="w-10 h-1.5 bg-[#075E36]/20 dark:bg-white/[0.15] rounded-full mx-auto mb-3.5 sm:hidden" />
               <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-[#FFFDF7] dark:bg-[#0D0D0D] text-[#292929] dark:text-[#D6A84F] flex items-center justify-center shrink-0 mt-0.5">
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <div className="w-11 h-11 rounded-2xl bg-[#FF9933]/14 border border-[#FF9933]/30 text-[#E87516] dark:text-[#FFB866] flex items-center justify-center shrink-0 mt-0.5">
                     <CategoryIcon category={job.applianceCategory} className="w-5 h-5" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs text-[#595959] dark:text-[#B5ADA0] truncate">
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] truncate">
                       {CATEGORY_MAP[job.applianceCategory]} · {job.neighborhood}
                     </p>
-                    <h2 id="job-detail-title" className="text-lg font-semibold text-[#171717] dark:text-white leading-snug mt-0.5">
+                    <h2 id="job-detail-title" className="text-lg sm:text-xl font-bold text-[#18231E] dark:text-[#FFFDF8] leading-snug">
                       {job.issueTitle}
                     </h2>
                   </div>
@@ -250,36 +250,40 @@ export function JobDetailSheet({
                   type="button"
                   onClick={onClose}
                   aria-label="Close job details"
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#595959] dark:text-[#B5ADA0] hover:text-[#171717] dark:hover:text-white hover:bg-[#FFFDF7] dark:hover:bg-[#121212] transition-colors shrink-0"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#43564D] dark:text-[#9CB0A6] hover:text-[#18231E] dark:hover:text-[#FFFDF8] hover:bg-[#FF9933]/10 transition-colors shrink-0"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            <div className="overflow-y-auto px-6 py-5 space-y-5">
+            <div className="overflow-y-auto px-6 sm:px-7 py-6 space-y-6">
               {/* 5-Step Live Tracking Timeline */}
               {job.status !== 'cancelled' && job.status !== 'rejected' ? (
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-[#171717] dark:text-white">
+                <div className="rounded-2xl bg-[#FFFDF8]/70 dark:bg-[#07130F]/60 border border-[#075E36]/12 dark:border-white/[0.08] p-4 sm:p-5 space-y-3.5">
+                  <div className="flex items-center justify-between gap-3 text-xs">
+                    <span className="font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                       Live Status: {STATUS_LABELS[job.status]}
                     </span>
-                    <span className="text-[#595959] dark:text-[#B5ADA0]">{URGENCY_LABELS[job.urgency]}</span>
+                    <span className="text-[#E87516] dark:text-[#FFB866] font-semibold">{URGENCY_LABELS[job.urgency]}</span>
                   </div>
-                  <div className="grid grid-cols-5 gap-1.5">
+                  <div className="grid grid-cols-5 gap-2">
                     {PROGRESS_STEPS.map((step, idx) => {
                       const done = activeStepIndex >= idx;
                       return (
-                        <div key={step.status} className="space-y-1">
+                        <div key={step.status} className="space-y-1.5">
                           <div
-                            className={`h-1.5 rounded-full transition-colors ${
-                              done ? 'bg-[#171717] dark:bg-[#D6A84F]' : 'bg-slate-200 dark:bg-[#262626]'
+                            className={`h-2 rounded-full transition-colors ${
+                              done
+                                ? idx >= 4
+                                  ? 'bg-[#138808] dark:bg-[#35C46A]'
+                                  : 'bg-gradient-to-r from-[#FF9933] to-[#35C46A]'
+                                : 'bg-[#075E36]/15 dark:bg-white/[0.12]'
                             }`}
                           />
                           <span
                             className={`block text-[11px] truncate ${
-                              done ? 'text-[#171717] dark:text-[#FFFDF7] font-semibold' : 'text-slate-400 dark:text-[#595959]'
+                              done ? 'text-[#18231E] dark:text-[#FFFDF8] font-semibold' : 'text-[#5B6F65] dark:text-[#7E948A]'
                             }`}
                           >
                             {step.label}
@@ -290,11 +294,11 @@ export function JobDetailSheet({
                   </div>
                 </div>
               ) : job.status === 'rejected' ? (
-                <div className="rounded-xl bg-amber-50 dark:bg-amber-500/15 border border-amber-200 dark:border-amber-500/30 p-4 space-y-2.5">
-                  <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+                <div className="rounded-xl bg-[#FF9933]/12 border border-[#FF9933]/35 p-4 space-y-2.5">
+                  <p className="text-sm font-semibold text-[#18231E] dark:text-[#FFD28A]">
                     Technician declined this direct request
                   </p>
-                  <p className="text-xs text-amber-800 dark:text-amber-300">
+                  <p className="text-xs text-[#43564D] dark:text-[#9CB0A6]">
                     {job.cancellationReason || 'The selected technician was unavailable for this time slot.'}
                   </p>
                   {isCustomer ? (
@@ -302,21 +306,21 @@ export function JobDetailSheet({
                       type="button"
                       disabled={submitting}
                       onClick={() => onReopenJob(job)}
-                      className="min-h-[40px] px-4 py-2 rounded-xl bg-[#171717] text-white text-xs font-semibold hover:bg-[#262626]"
+                      className="min-h-[40px] px-4 py-2 rounded-xl yn-btn-saffron text-xs font-semibold"
                     >
                       Broadcast Request to All Nearby Pros
                     </button>
                   ) : null}
                 </div>
               ) : (
-                <div className="rounded-xl bg-[#FFFDF7] dark:bg-[#0D0D0D] px-4 py-3 text-sm text-[#292929] dark:text-[#DDD6C7]">
+                <div className="rounded-xl bg-[#E8EDF2]/70 dark:bg-[#07130F] border border-[#075E36]/15 dark:border-white/[0.10] px-4 py-3 text-sm text-[#43564D] dark:text-[#9CB0A6]">
                   This repair request was cancelled. {job.cancellationReason ? `(${job.cancellationReason})` : ''}
                 </div>
               )}
 
               {/* Uploaded Problem Photo / Video Preview */}
               {job.mediaUrl ? (
-                <div className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] overflow-hidden bg-[#FFFDF7] dark:bg-[#0D0D0D]/65">
+                <div className="rounded-xl border border-[#075E36]/15 dark:border-white/[0.10] overflow-hidden bg-[#FFFDF8] dark:bg-[#07130F]/80">
                   {job.mediaType === 'video' ? (
                     <video src={job.mediaUrl} controls className="w-full max-h-56 bg-black object-contain" />
                   ) : (
@@ -326,35 +330,35 @@ export function JobDetailSheet({
                       className="w-full max-h-56 object-cover"
                     />
                   )}
-                  <div className="px-3.5 py-2 text-[11px] text-[#595959] dark:text-[#B5ADA0]">
+                  <div className="px-3.5 py-2 text-[11px] text-[#43564D] dark:text-[#9CB0A6]">
                     Customer problem media: {job.mediaLabel || 'Fault attachment'}
                   </div>
                 </div>
               ) : null}
 
               {/* Description & Pricing Transparency Grid */}
-              <div className="space-y-3">
-                <p className="text-sm text-[#292929] dark:text-[#DDD6C7] leading-relaxed">{job.issueDescription}</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-[#EFE8D5] dark:border-[#2E2E2E] text-xs">
-                  <div>
-                    <span className="block text-[#595959] dark:text-[#B5ADA0]">Homeowner</span>
-                    <span className="font-semibold text-[#171717] dark:text-white">{job.customerName}</span>
+              <div className="rounded-2xl bg-[#FFFDF8]/70 dark:bg-[#07130F]/60 border border-[#075E36]/12 dark:border-white/[0.08] p-4 sm:p-5 space-y-4">
+                <p className="text-sm text-[#43564D] dark:text-[#E8EDF2] leading-relaxed">{job.issueDescription}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-3.5 border-t border-[#075E36]/12 dark:border-white/[0.08] text-xs">
+                  <div className="space-y-0.5">
+                    <span className="block text-[#5B6F65] dark:text-[#7E948A]">Homeowner</span>
+                    <span className="font-semibold text-[#18231E] dark:text-[#FFFDF8]">{job.customerName}</span>
                   </div>
-                  <div>
-                    <span className="block text-[#595959] dark:text-[#B5ADA0]">Visit slot</span>
-                    <span className="font-semibold text-[#171717] dark:text-white">{job.preferredSlot}</span>
+                  <div className="space-y-0.5">
+                    <span className="block text-[#5B6F65] dark:text-[#7E948A]">Visit slot</span>
+                    <span className="font-semibold text-[#18231E] dark:text-[#FFFDF8]">{job.preferredSlot}</span>
                   </div>
-                  <div>
-                    <span className="block text-[#595959] dark:text-[#B5ADA0]">Inspection fee</span>
-                    <span className="tabular-nums font-bold text-[#171717] dark:text-white">
+                  <div className="space-y-0.5">
+                    <span className="block text-[#5B6F65] dark:text-[#7E948A]">Inspection fee</span>
+                    <span className="tabular-nums font-bold text-[#18231E] dark:text-[#FFFDF8]">
                       {formatMoney(job.inspectionFee ?? 0, job.currencyCode || 'USD')}
                     </span>
                   </div>
-                  <div>
-                    <span className="block text-[#595959] dark:text-[#B5ADA0]">
+                  <div className="space-y-0.5">
+                    <span className="block text-[#5B6F65] dark:text-[#7E948A]">
                       {job.quotedFee > 0 ? 'Final quote' : 'Est. repair'}
                     </span>
-                    <span className="tabular-nums font-bold text-[#171717] dark:text-white">
+                    <span className="tabular-nums font-bold text-[#18231E] dark:text-[#FFD28A]">
                       {formatMoney(
                         job.quotedFee > 0 ? job.quotedFee : job.estimatedBudget,
                         job.currencyCode || 'USD'
@@ -369,27 +373,27 @@ export function JobDetailSheet({
                 <div
                   className={`rounded-xl border p-4 space-y-2 ${
                     job.priceApproved
-                      ? 'bg-emerald-50/70 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/30'
-                      : 'bg-amber-50/80 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30'
+                      ? 'bg-[#138808]/10 dark:bg-[#35C46A]/10 border-[#35C46A]/35'
+                      : 'bg-[#FF9933]/12 border-[#FF9933]/35'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs font-bold text-[#171717] dark:text-white">
+                      <p className="text-xs font-bold text-[#18231E] dark:text-[#FFFDF8]">
                         {job.priceApproved
                           ? 'Final Repair Price Approved'
                           : 'Final Price Approval Required'}
                       </p>
-                      <p className="text-xs text-[#292929] dark:text-[#DDD6C7] mt-0.5">
+                      <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] mt-0.5">
                         Total quote:{' '}
-                        <strong className="tabular-nums">
+                        <strong className="tabular-nums text-[#18231E] dark:text-[#FFFDF8]">
                           {formatMoney(job.quotedFee, job.currencyCode || 'USD')}
                         </strong>{' '}
                         (includes {formatMoney(job.inspectionFee ?? 0, job.currencyCode || 'USD')} inspection)
                       </p>
                     </div>
                     {job.priceApproved ? (
-                      <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 shrink-0">
+                      <span className="text-xs font-bold text-[#138808] dark:text-[#7DFF9B] flex items-center gap-1 shrink-0">
                         <ShieldCheck className="w-4 h-4" />
                         Approved
                       </span>
@@ -398,13 +402,13 @@ export function JobDetailSheet({
                         type="button"
                         disabled={submitting}
                         onClick={() => onApproveQuote(job)}
-                        className="min-h-[40px] px-3.5 py-1.5 rounded-xl bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 shrink-0 flex items-center gap-1.5"
+                        className="min-h-[40px] px-3.5 py-1.5 rounded-xl yn-btn-emerald text-xs font-semibold shrink-0 flex items-center gap-1.5"
                       >
                         <ThumbsUp className="w-3.5 h-3.5" />
                         <span>Approve Price</span>
                       </button>
                     ) : (
-                      <span className="text-xs font-semibold text-amber-800 dark:text-amber-300 shrink-0">
+                      <span className="text-xs font-semibold text-[#E87516] dark:text-[#FFD28A] shrink-0">
                         Awaiting customer
                       </span>
                     )}
@@ -414,13 +418,13 @@ export function JobDetailSheet({
 
               {/* Completed Digital Invoice Banner */}
               {job.status === 'completed' ? (
-                <div className="rounded-xl bg-[#FFFDF7] dark:bg-[#D6A84F]/15 border border-[#D6A84F]/40 dark:border-[#D6A84F]/35 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="rounded-xl bg-[#138808]/10 dark:bg-[#35C46A]/10 border border-[#35C46A]/35 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-bold text-[#171717] dark:text-white flex items-center gap-1.5">
-                      <FileText className="w-4 h-4 text-[#8F6412] dark:text-[#D6A84F]" />
+                    <p className="text-sm font-bold text-[#18231E] dark:text-[#FFFDF8] flex items-center gap-1.5">
+                      <FileText className="w-4 h-4 text-[#138808] dark:text-[#7DFF9B]" />
                       <span>Digital Invoice &amp; Service Record Ready</span>
                     </p>
-                    <p className="text-xs text-[#292929] dark:text-[#DDD6C7] mt-0.5">
+                    <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] mt-0.5">
                       {job.workSummary || 'Repair completed'} ·{' '}
                       {job.warrantyDays && job.warrantyDays > 0
                         ? `${job.warrantyDays}-day warranty`
@@ -430,7 +434,7 @@ export function JobDetailSheet({
                   <button
                     type="button"
                     onClick={() => onOpenInvoice(job)}
-                    className="min-h-[42px] px-4 py-2 rounded-xl bg-[#171717] text-white text-xs font-semibold hover:bg-[#262626] shrink-0"
+                    className="min-h-[42px] px-4 py-2 rounded-xl yn-btn-emerald text-xs font-semibold shrink-0"
                   >
                     View Digital Invoice
                   </button>
@@ -439,33 +443,33 @@ export function JobDetailSheet({
 
               {/* Assigned technician banner + Direct Call */}
               {job.technicianId ? (
-                <div className="rounded-xl bg-[#FFFDF7] dark:bg-[#0D0D0D]/75 border border-[#E8DFC8] dark:border-[#2E2E2E] p-4 space-y-2">
+                <div className="rounded-2xl bg-[#FFFDF8] dark:bg-[#07130F]/80 border border-[#075E36]/15 dark:border-white/[0.10] p-5 space-y-3">
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-[#171717] dark:text-white">
+                    <span className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                       Assigned Technician: {job.technicianName}
                     </span>
                     {job.technicianEta ? (
-                      <span className="text-xs tabular-nums text-[#8F6412] dark:text-[#D6A84F] font-semibold">
+                      <span className="text-xs tabular-nums text-[#E87516] dark:text-[#FFD28A] font-semibold">
                         ETA {job.technicianEta}
                       </span>
                     ) : null}
                   </div>
                   {techContact?.phone ? (
                     <div className="flex items-center justify-between gap-3 pt-1">
-                      <span className="text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7] font-medium flex items-center gap-2">
-                        <Phone className="w-4 h-4 text-[#8F6412] dark:text-[#D6A84F]" />
+                      <span className="text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] font-medium flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-[#138808] dark:text-[#35C46A]" />
                         {techContact.phone}
                       </span>
                       <a
                         href={`tel:${techContact.phone.replace(/\s+/g, '')}`}
-                        className="min-h-[38px] px-3.5 py-1.5 rounded-lg bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-xs font-semibold hover:bg-[#262626] dark:hover:brightness-110 transition-colors flex items-center gap-1.5"
+                        className="min-h-[42px] px-4 py-2 rounded-xl yn-btn-saffron text-xs font-semibold transition-all flex items-center gap-1.5"
                       >
                         <Phone className="w-3.5 h-3.5" />
                         <span>Call Technician</span>
                       </a>
                     </div>
                   ) : (
-                    <p className="text-xs text-[#595959] dark:text-[#B5ADA0]">
+                    <p className="text-xs text-[#43564D] dark:text-[#9CB0A6]">
                       Use coordination messages below to confirm arrival or spare parts.
                     </p>
                   )}
@@ -474,26 +478,26 @@ export function JobDetailSheet({
 
               {/* Protected homeowner contact details */}
               {(isCustomer || isAssignedTech) && !job.isSample ? (
-                <div className="rounded-xl bg-[#D6A84F]/10 dark:bg-[#D6A84F]/15 border border-[#D6A84F]/40 dark:border-[#D6A84F]/35 p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-[#171717] dark:text-[#D6A84F]">
+                <div className="rounded-2xl bg-[#FF9933]/10 border border-[#FF9933]/35 p-5 space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-semibold text-[#E87516] dark:text-[#FFD28A]">
                     <Lock className="w-3.5 h-3.5" />
                     <span>Homeowner Visit Address &amp; Phone</span>
                   </div>
                   {privateContact ? (
-                    <div className="space-y-2 text-sm text-[#171717] dark:text-[#FFFDF7]">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-4 h-4 text-[#595959] dark:text-[#B5ADA0] shrink-0" />
+                    <div className="space-y-2.5 text-sm text-[#18231E] dark:text-[#FFFDF8]">
+                      <div className="flex items-center gap-2.5">
+                        <MapPin className="w-4 h-4 text-[#5B6F65] dark:text-[#9CB0A6] shrink-0" />
                         <span>{privateContact.streetAddress}</span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <span className="tabular-nums font-medium flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-[#595959] dark:text-[#B5ADA0] shrink-0" />
+                        <span className="tabular-nums font-medium flex items-center gap-2.5">
+                          <Phone className="w-4 h-4 text-[#5B6F65] dark:text-[#9CB0A6] shrink-0" />
                           {privateContact.phone}
                         </span>
                         {isAssignedTech ? (
                           <a
                             href={`tel:${privateContact.phone.replace(/\s+/g, '')}`}
-                            className="min-h-[38px] px-3.5 py-1.5 rounded-lg bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-xs font-semibold hover:bg-[#262626] dark:hover:brightness-110 transition-colors flex items-center gap-1.5"
+                            className="min-h-[42px] px-4 py-2 rounded-xl yn-btn-saffron text-xs font-semibold transition-all flex items-center gap-1.5"
                           >
                             <Phone className="w-3.5 h-3.5" />
                             <span>Call Homeowner</span>
@@ -501,11 +505,11 @@ export function JobDetailSheet({
                         ) : null}
                       </div>
                       {privateContact.accessNote ? (
-                        <p className="text-xs text-[#292929] dark:text-[#DDD6C7] pl-6">Note: {privateContact.accessNote}</p>
+                        <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] pl-6">Note: {privateContact.accessNote}</p>
                       ) : null}
                     </div>
                   ) : (
-                    <p className="text-xs text-[#292929] dark:text-[#DDD6C7]">Loading protected visit details...</p>
+                    <p className="text-xs text-[#43564D] dark:text-[#9CB0A6]">Loading protected visit details...</p>
                   )}
                 </div>
               ) : null}
@@ -518,21 +522,21 @@ export function JobDetailSheet({
                 job.status === 'en_route' ||
                 job.status === 'arrived' ||
                 job.status === 'in_progress') ? (
-                <div className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-[#FFFDF7] dark:bg-[#0D0D0D]/75 p-4 space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-[#171717] dark:text-white">
-                    <CreditCard className="w-4 h-4 text-[#8F6412] dark:text-[#D6A84F]" />
+                <div className="rounded-2xl border border-[#075E36]/18 dark:border-white/[0.10] bg-[#FFFDF8] dark:bg-[#07130F]/80 p-5 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">
+                    <CreditCard className="w-4 h-4 text-[#138808] dark:text-[#35C46A]" />
                     <span>Settle payment ({formatMoney(job.quotedFee || job.estimatedBudget, job.currencyCode || 'USD')})</span>
                   </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
                     {PAYMENT_METHOD_OPTIONS.map((pm) => (
                       <button
                         key={pm.id}
                         type="button"
                         onClick={() => setSelectedPayMethod(pm.id)}
-                        className={`min-h-[40px] px-2 rounded-lg border text-xs font-medium transition-colors ${
+                        className={`min-h-[44px] px-2.5 rounded-xl border text-xs font-medium transition-colors ${
                           selectedPayMethod === pm.id
-                            ? 'bg-white dark:bg-[#171717] border-[#D6A84F] text-[#171717] dark:text-[#D6A84F] font-semibold'
-                            : 'bg-[#FFFDF7] dark:bg-[#0D0D0D] border-transparent text-[#292929] dark:text-[#DDD6C7]'
+                            ? 'bg-[#138808]/14 dark:bg-[#35C46A]/15 border-[#35C46A] text-[#138808] dark:text-[#7DFF9B] font-semibold'
+                            : 'bg-[#FFFDF8] dark:bg-[#071B16] border-[#075E36]/12 dark:border-white/[0.08] text-[#43564D] dark:text-[#9CB0A6]'
                         }`}
                       >
                         {pm.shortLabel}
@@ -543,7 +547,7 @@ export function JobDetailSheet({
                     type="button"
                     disabled={submitting}
                     onClick={() => onSettlePayment(job, selectedPayMethod)}
-                    className="w-full min-h-[44px] px-4 py-2 rounded-xl bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-xs sm:text-sm font-semibold hover:bg-[#262626] dark:hover:brightness-110 disabled:opacity-60 transition-colors"
+                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl yn-btn-emerald text-xs sm:text-sm font-semibold disabled:opacity-60 transition-all"
                   >
                     Confirm Payment via {PAYMENT_METHOD_MAP[selectedPayMethod]}
                   </button>
@@ -552,11 +556,11 @@ export function JobDetailSheet({
 
               {/* Open Job Action: Technician Claim or Reject */}
               {job.status === 'open' && !isCustomer ? (
-                <div className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-[#FFFDF7] dark:bg-[#0D0D0D]/75 p-4 space-y-4">
+                <div className="rounded-2xl border border-[#075E36]/18 dark:border-white/[0.10] bg-[#FFFDF8] dark:bg-[#07130F]/80 p-5 space-y-5">
                   {job.isSample ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-[#171717] dark:text-white">Example neighborhood listing</p>
-                      <p className="text-xs text-[#292929] dark:text-[#DDD6C7]">
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">Example neighborhood listing</p>
+                      <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] leading-relaxed">
                         Sign in with Google and register your technician profile to claim live homeowner requests in your area.
                       </p>
                       <button
@@ -568,15 +572,15 @@ export function JobDetailSheet({
                             onOpenTechSetup();
                           }
                         }}
-                        className="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-sm font-semibold hover:bg-[#262626] dark:hover:brightness-110 transition-colors"
+                        className="w-full min-h-[46px] px-4 py-2.5 rounded-xl yn-btn-saffron text-sm font-semibold transition-all"
                       >
                         {currentUid ? 'Set Up My Technician Profile' : 'Sign In to Claim Live Jobs'}
                       </button>
                     </div>
                   ) : !currentUid ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-[#171717] dark:text-white">Ready to take this job?</p>
-                      <p className="text-xs text-[#292929] dark:text-[#DDD6C7]">
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">Ready to take this job?</p>
+                      <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] leading-relaxed">
                         Sign in with Google to accept this request and unlock the homeowner&apos;s address and phone number.
                       </p>
                       <button
@@ -584,35 +588,35 @@ export function JobDetailSheet({
                         onClick={() =>
                           onRequireAuth('Sign in with Google to accept this repair job.')
                         }
-                        className="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-sm font-semibold hover:bg-[#262626] dark:hover:brightness-110 transition-colors"
+                        className="w-full min-h-[46px] px-4 py-2.5 rounded-xl yn-btn-saffron text-sm font-semibold transition-all"
                       >
                         Sign In &amp; Accept Job
                       </button>
                     </div>
                   ) : !myTechnicianProfile ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-[#171717] dark:text-white">
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                         Create your technician profile first
                       </p>
-                      <p className="text-xs text-[#292929] dark:text-[#DDD6C7]">
+                      <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] leading-relaxed">
                         A quick technician profile lets homeowners see your specialties, verification badge, and contact phone.
                       </p>
                       <button
                         type="button"
                         onClick={onOpenTechSetup}
-                        className="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-sm font-semibold hover:bg-[#262626] dark:hover:brightness-110 transition-colors"
+                        className="w-full min-h-[46px] px-4 py-2.5 rounded-xl yn-btn-emerald text-sm font-semibold transition-all"
                       >
                         Create Technician Profile
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-[#171717] dark:text-white">
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                         Accept &amp; Quote this repair job
                       </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <label htmlFor="accept-eta" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                          <label htmlFor="accept-eta" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                             Arrival ETA
                           </label>
                           <input
@@ -622,11 +626,11 @@ export function JobDetailSheet({
                             value={etaInput}
                             onChange={(e) => setEtaInput(e.target.value)}
                             placeholder="e.g., 30 mins"
-                            className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7]"
+                            className="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                           />
                         </div>
                         <div>
-                          <label htmlFor="accept-phone" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                          <label htmlFor="accept-phone" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                             Your phone
                           </label>
                           <input
@@ -636,11 +640,11 @@ export function JobDetailSheet({
                             value={techPhoneInput}
                             onChange={(e) => setTechPhoneInput(e.target.value)}
                             placeholder="+91 98765..."
-                            className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7]"
+                            className="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                           />
                         </div>
                         <div>
-                          <label htmlFor="accept-inspect" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                          <label htmlFor="accept-inspect" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                             Inspection fee ({job.currencyCode || 'USD'})
                           </label>
                           <input
@@ -650,11 +654,11 @@ export function JobDetailSheet({
                             max={10000000}
                             value={inspectionInput}
                             onChange={(e) => setInspectionInput(e.target.value)}
-                            className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7]"
+                            className="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                           />
                         </div>
                         <div>
-                          <label htmlFor="accept-quote" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                          <label htmlFor="accept-quote" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                             Estimated Total Quote ({job.currencyCode || 'USD'})
                           </label>
                           <input
@@ -664,11 +668,11 @@ export function JobDetailSheet({
                             max={10000000}
                             value={quoteInput}
                             onChange={(e) => setQuoteInput(e.target.value)}
-                            className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7]"
+                            className="w-full min-h-[46px] px-3.5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                           />
                         </div>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3 pt-1">
                         <button
                           type="button"
                           disabled={submitting}
@@ -681,7 +685,7 @@ export function JobDetailSheet({
                               techPhoneInput.trim()
                             )
                           }
-                          className="flex-1 min-h-[48px] px-4 py-2.5 rounded-xl bg-[#171717] text-white text-sm font-semibold hover:bg-[#262626] disabled:opacity-60 transition-colors"
+                          className="flex-1 min-h-[48px] px-5 py-2.5 rounded-xl yn-btn-emerald text-sm font-semibold disabled:opacity-60 transition-all"
                         >
                           {submitting ? 'Claiming job...' : 'Accept Job & Share Contact'}
                         </button>
@@ -692,7 +696,7 @@ export function JobDetailSheet({
                             onClick={() =>
                               onRejectJob(job, 'Technician busy for this requested time slot')
                             }
-                            className="min-h-[48px] px-4 py-2.5 rounded-xl border border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300 text-sm font-semibold hover:bg-rose-50 dark:hover:bg-rose-500/15 flex items-center gap-1.5"
+                            className="min-h-[48px] px-4 py-2.5 rounded-xl border border-rose-500/35 text-rose-700 dark:text-rose-300 text-sm font-semibold hover:bg-rose-500/10 flex items-center gap-1.5"
                           >
                             <ThumbsDown className="w-4 h-4" />
                             <span>Reject</span>
@@ -709,13 +713,13 @@ export function JobDetailSheet({
               job.status !== 'completed' &&
               job.status !== 'cancelled' &&
               job.status !== 'rejected' ? (
-                <div className="rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-[#FFFDF7] dark:bg-[#0D0D0D]/75 p-4 space-y-3">
-                  <h3 className="text-sm font-semibold text-[#171717] dark:text-white">
+                <div className="rounded-2xl border border-[#075E36]/18 dark:border-white/[0.10] bg-[#FFFDF8] dark:bg-[#07130F]/80 p-5 space-y-4">
+                  <h3 className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                     Live Service &amp; Invoice Controls
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label htmlFor="update-eta" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                      <label htmlFor="update-eta" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                         Updated ETA
                       </label>
                       <input
@@ -724,11 +728,11 @@ export function JobDetailSheet({
                         maxLength={60}
                         value={etaInput}
                         onChange={(e) => setEtaInput(e.target.value)}
-                        className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7]"
+                        className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8]"
                       />
                     </div>
                     <div>
-                      <label htmlFor="update-inspect" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                      <label htmlFor="update-inspect" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                         Inspection ({job.currencyCode || 'USD'})
                       </label>
                       <input
@@ -738,11 +742,11 @@ export function JobDetailSheet({
                         max={10000000}
                         value={inspectionInput}
                         onChange={(e) => setInspectionInput(e.target.value)}
-                        className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7]"
+                        className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8]"
                       />
                     </div>
                     <div>
-                      <label htmlFor="update-fee" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                      <label htmlFor="update-fee" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                         Final total ({job.currencyCode || 'USD'})
                       </label>
                       <input
@@ -752,15 +756,15 @@ export function JobDetailSheet({
                         max={10000000}
                         value={quoteInput}
                         onChange={(e) => setQuoteInput(e.target.value)}
-                        className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7]"
+                        className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8]"
                       />
                     </div>
                   </div>
 
                   {/* Invoice summary fields for completion */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
                     <div className="sm:col-span-2">
-                      <label htmlFor="work-summary" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                      <label htmlFor="work-summary" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                         Work performed (for Digital Invoice)
                       </label>
                       <input
@@ -770,11 +774,11 @@ export function JobDetailSheet({
                         value={workSummaryInput}
                         onChange={(e) => setWorkSummaryInput(e.target.value)}
                         placeholder="e.g., Replaced faulty capacitor and tested full cooling cycle"
-                        className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-xs text-[#171717] dark:text-[#FFFDF7]"
+                        className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-xs sm:text-sm text-[#18231E] dark:text-[#FFFDF8]"
                       />
                     </div>
                     <div>
-                      <label htmlFor="warranty-days" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                      <label htmlFor="warranty-days" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                         Warranty (days)
                       </label>
                       <input
@@ -784,12 +788,12 @@ export function JobDetailSheet({
                         max={1825}
                         value={warrantyInput}
                         onChange={(e) => setWarrantyInput(e.target.value)}
-                        className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-xs tabular-nums text-[#171717] dark:text-[#FFFDF7]"
+                        className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-xs sm:text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8]"
                       />
                     </div>
                   </div>
                   <div>
-                    <label htmlFor="parts-replaced" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                    <label htmlFor="parts-replaced" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                       Parts replaced (optional)
                     </label>
                     <input
@@ -799,11 +803,11 @@ export function JobDetailSheet({
                       value={partsInput}
                       onChange={(e) => setPartsInput(e.target.value)}
                       placeholder="e.g., 2.5uF Capacitor, Copper Flare Nut"
-                      className="w-full min-h-[40px] px-3 py-1.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-xs text-[#171717] dark:text-[#FFFDF7]"
+                      className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-xs sm:text-sm text-[#18231E] dark:text-[#FFFDF8]"
                     />
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-1">
+                  <div className="flex flex-wrap gap-3 pt-2">
                     {job.status === 'accepted' ? (
                       <button
                         type="button"
@@ -818,7 +822,7 @@ export function JobDetailSheet({
                             job.paymentStatus || 'pending'
                           )
                         }
-                        className="flex-1 min-h-[44px] px-3 py-2 rounded-xl bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-xs sm:text-sm font-semibold hover:bg-[#262626]"
+                        className="flex-1 min-h-[46px] px-4 py-2.5 rounded-xl yn-btn-saffron text-xs sm:text-sm font-semibold"
                       >
                         Mark Travelling
                       </button>
@@ -837,7 +841,7 @@ export function JobDetailSheet({
                             job.paymentStatus || 'pending'
                           )
                         }
-                        className="flex-1 min-h-[44px] px-3 py-2 rounded-xl bg-[#171717] text-white text-xs sm:text-sm font-semibold hover:bg-[#262626]"
+                        className="flex-1 min-h-[46px] px-4 py-2.5 rounded-xl bg-[#0A1D4D] hover:bg-[#1E40AF] text-white text-xs sm:text-sm font-semibold transition-colors"
                       >
                         Mark Arrived
                       </button>
@@ -856,7 +860,7 @@ export function JobDetailSheet({
                             job.paymentStatus || 'pending'
                           )
                         }
-                        className="flex-1 min-h-[44px] px-3 py-2 rounded-xl bg-[#171717] dark:bg-[#262626] text-white text-xs sm:text-sm font-semibold hover:bg-slate-800"
+                        className="flex-1 min-h-[46px] px-4 py-2.5 rounded-xl yn-btn-saffron text-xs sm:text-sm font-semibold"
                       >
                         Start Service
                       </button>
@@ -877,7 +881,7 @@ export function JobDetailSheet({
                           Number(warrantyInput) || 30
                         )
                       }
-                      className="flex-1 min-h-[44px] px-4 py-2 rounded-xl bg-emerald-700 dark:bg-emerald-600 text-white text-xs sm:text-sm font-semibold hover:bg-emerald-800 flex items-center justify-center gap-1.5"
+                      className="flex-1 min-h-[46px] px-4 py-2.5 rounded-xl yn-btn-emerald text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       <span>Complete &amp; Invoice</span>
@@ -888,14 +892,14 @@ export function JobDetailSheet({
 
               {/* Coordination Chat */}
               {(isCustomer || isAssignedTech) && job.technicianId && !job.isSample ? (
-                <div className="border-t border-[#E8DFC8] dark:border-[#2E2E2E] pt-4 space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-[#171717] dark:text-white">
-                    <MessageSquare className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                <div className="border-t border-[#075E36]/12 dark:border-white/[0.08] pt-5 space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">
+                    <MessageSquare className="w-4 h-4 text-[#E87516] dark:text-[#FFB866]" />
                     <span>Direct coordination messages</span>
                   </div>
-                  <div className="max-h-48 overflow-y-auto space-y-2 rounded-xl bg-[#FFFDF7] dark:bg-[#0D0D0D]/75 border border-[#E8DFC8] dark:border-[#2E2E2E] p-3">
+                  <div className="max-h-52 overflow-y-auto space-y-3 rounded-2xl bg-[#E8EDF2]/65 dark:bg-[#07130F]/80 border border-[#075E36]/15 dark:border-white/[0.10] p-4">
                     {messages.length === 0 ? (
-                      <p className="text-xs text-[#595959] dark:text-[#B5ADA0] text-center py-4">
+                      <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] text-center py-5">
                         No messages yet. Share arrival updates or final quote details here.
                       </p>
                     ) : (
@@ -907,15 +911,15 @@ export function JobDetailSheet({
                             className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}
                           >
                             <div
-                              className={`max-w-[85%] rounded-xl px-3.5 py-2 text-sm ${
+                              className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                                 mine
-                                  ? 'bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717]'
-                                  : 'bg-white dark:bg-[#171717] border border-[#E8DFC8] dark:border-[#2E2E2E] text-[#171717] dark:text-[#FFFDF7]'
+                                  ? 'yn-btn-saffron'
+                                  : 'bg-[#FFFDF8] dark:bg-[#071B16] border border-[#075E36]/15 dark:border-white/[0.10] text-[#18231E] dark:text-[#FFFDF8]'
                               }`}
                             >
                               <p>{msg.text}</p>
                             </div>
-                            <span className="text-[11px] text-slate-400 dark:text-[#595959] mt-0.5">
+                            <span className="text-[11px] text-[#5B6F65] dark:text-[#7E948A] mt-1">
                               {msg.senderName} · {formatTimestamp(msg.createdAt)}
                             </span>
                           </div>
@@ -924,20 +928,20 @@ export function JobDetailSheet({
                     )}
                   </div>
                   {job.status !== 'cancelled' ? (
-                    <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                    <form onSubmit={handleSendMessage} className="flex items-center gap-3">
                       <input
                         type="text"
                         maxLength={500}
                         value={messageText}
                         onChange={(e) => setMessageText(e.target.value)}
                         placeholder="Write a message..."
-                        className="flex-1 min-h-[44px] px-3.5 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
+                        className="flex-1 min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] placeholder:text-[#5B6F65] dark:placeholder:text-[#7E948A] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                       />
                       <button
                         type="submit"
                         disabled={sendingMsg || !messageText.trim()}
                         aria-label="Send message"
-                        className="min-h-[44px] min-w-[44px] px-3.5 rounded-xl bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] hover:bg-[#262626] dark:hover:brightness-110 disabled:opacity-50 transition-colors flex items-center justify-center"
+                        className="min-h-[46px] min-w-[46px] px-4 rounded-xl yn-btn-saffron disabled:opacity-50 transition-all flex items-center justify-center"
                       >
                         <Send className="w-4 h-4" />
                       </button>
@@ -948,36 +952,36 @@ export function JobDetailSheet({
 
               {/* Completed Review Section */}
               {isCustomer && job.status === 'completed' ? (
-                <div className="border-t border-[#E8DFC8] dark:border-[#2E2E2E] pt-4 space-y-3">
+                <div className="border-t border-[#075E36]/12 dark:border-white/[0.08] pt-5 space-y-4">
                   {existingReview ? (
-                    <div className="rounded-xl bg-[#FFFDF7] dark:bg-[#0D0D0D]/75 border border-[#E8DFC8] dark:border-[#2E2E2E] p-4 space-y-1">
+                    <div className="rounded-2xl bg-[#FFFDF8] dark:bg-[#07130F]/80 border border-[#075E36]/15 dark:border-white/[0.10] p-5 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-[#171717] dark:text-white">Your verified review</span>
-                        <span className="text-sm tabular-nums text-amber-600 dark:text-amber-400 font-semibold">
+                        <span className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">Your verified review</span>
+                        <span className="text-sm tabular-nums text-[#E87516] dark:text-[#FFD28A] font-semibold">
                           {existingReview.rating}/5 ★
                         </span>
                       </div>
-                      <p className="text-sm text-[#292929] dark:text-[#DDD6C7]">{existingReview.comment}</p>
+                      <p className="text-sm text-[#43564D] dark:text-[#9CB0A6] leading-relaxed">{existingReview.comment}</p>
                     </div>
                   ) : (
-                    <div className="rounded-xl bg-[#FFFDF7] dark:bg-[#0D0D0D]/75 border border-[#E8DFC8] dark:border-[#2E2E2E] p-4 space-y-3">
-                      <h3 className="text-sm font-semibold text-[#171717] dark:text-white">
+                    <div className="rounded-2xl bg-[#FFFDF8] dark:bg-[#07130F]/80 border border-[#075E36]/15 dark:border-white/[0.10] p-5 space-y-4">
+                      <h3 className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                         Rate {job.technicianName}&apos;s repair
                       </h3>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-2">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
                             type="button"
                             onClick={() => setRating(star)}
                             aria-label={`Rate ${star} stars`}
-                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-[#FF9933]/10 transition-colors"
                           >
                             <Star
                               className={`w-6 h-6 ${
                                 star <= rating
-                                  ? 'fill-amber-400 text-amber-500'
-                                  : 'text-slate-300 dark:text-slate-600'
+                                  ? 'fill-[#FF9933] text-[#E87516] dark:text-[#FFB866]'
+                                  : 'text-[#5B6F65]/40 dark:text-[#7E948A]/40'
                               }`}
                             />
                           </button>
@@ -989,13 +993,13 @@ export function JobDetailSheet({
                         value={reviewComment}
                         onChange={(e) => setReviewComment(e.target.value)}
                         placeholder="Was the technician punctual and clear on pricing?"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
+                        className="w-full px-4 py-3 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] placeholder:text-[#5B6F65] dark:placeholder:text-[#7E948A] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                       />
                       <button
                         type="button"
                         disabled={submitting || reviewComment.trim().length < 2}
                         onClick={() => onSubmitReview(job, rating, reviewComment.trim())}
-                        className="w-full min-h-[44px] px-4 py-2.5 rounded-xl bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-sm font-semibold hover:bg-[#262626] dark:hover:brightness-110 disabled:opacity-50 transition-colors"
+                        className="w-full min-h-[46px] px-4 py-2.5 rounded-xl yn-btn-emerald text-sm font-semibold disabled:opacity-50 transition-all"
                       >
                         {submitting ? 'Submitting review...' : 'Submit Verified Review'}
                       </button>
@@ -1006,24 +1010,24 @@ export function JobDetailSheet({
 
               {/* Customer cancel & Report actions */}
               {!job.isSample && currentUid ? (
-                <div className="pt-3 border-t border-[#EFE8D5] dark:border-[#2E2E2E] space-y-2.5">
+                <div className="pt-5 border-t border-[#075E36]/12 dark:border-white/[0.08] space-y-3.5">
                   {isCustomer &&
                   (job.status === 'open' ||
                     job.status === 'accepted' ||
                     job.status === 'en_route' ||
                     job.status === 'arrived') ? (
-                    <div className="space-y-2">
-                      <p className="text-[11px] text-[#595959] dark:text-[#B5ADA0]">
+                    <div className="space-y-3">
+                      <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] leading-relaxed">
                         {CANCELLATION_POLICY_TEXT}
                       </p>
-                      <div className="flex flex-col sm:flex-row gap-2">
+                      <div className="flex flex-col sm:flex-row gap-3">
                         <input
                           type="text"
                           maxLength={200}
                           value={cancelReason}
                           onChange={(e) => setCancelReason(e.target.value)}
                           placeholder="Reason for cancellation (optional)"
-                          className="flex-1 min-h-[40px] px-3 py-1.5 rounded-xl border border-[#E8DFC8] dark:border-[#2E2E2E] bg-slate-50 dark:bg-[#121212] text-xs"
+                          className="flex-1 min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-xs sm:text-sm text-[#18231E] dark:text-[#FFFDF8]"
                         />
                         <button
                           type="button"
@@ -1031,7 +1035,7 @@ export function JobDetailSheet({
                           onClick={() =>
                             onCancelJob(job, cancelReason.trim() || 'Cancelled by homeowner')
                           }
-                          className="min-h-[40px] px-4 py-1.5 rounded-xl text-xs font-semibold text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-500/15"
+                          className="min-h-[44px] px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-rose-700 dark:text-rose-300 border border-rose-500/35 hover:bg-rose-500/10"
                         >
                           Cancel Request
                         </button>
@@ -1039,7 +1043,7 @@ export function JobDetailSheet({
                     </div>
                   ) : null}
 
-                  <div className="flex items-center justify-between text-xs text-[#595959] dark:text-[#B5ADA0]">
+                  <div className="flex items-center justify-between gap-3 pt-1 text-xs text-[#43564D] dark:text-[#9CB0A6]">
                     <span className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" />
                       Posted {formatTimestamp(job.createdAt)}
@@ -1057,7 +1061,7 @@ export function JobDetailSheet({
                               : job.issueTitle,
                         })
                       }
-                      className="text-xs font-semibold text-rose-700 dark:text-rose-400 hover:underline flex items-center gap-1"
+                      className="min-h-[36px] px-2.5 rounded-lg text-xs font-semibold text-rose-700 dark:text-rose-400 hover:bg-rose-500/10 flex items-center gap-1.5 transition-colors"
                     >
                       <AlertTriangle className="w-3.5 h-3.5" />
                       <span>Report / Dispute</span>

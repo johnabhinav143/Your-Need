@@ -1,3 +1,4 @@
+import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
 import express, { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
@@ -13,7 +14,7 @@ import OpenAI, {
 } from 'openai';
 import type { EasyInputMessage } from 'openai/resources/responses/responses';
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -154,6 +155,168 @@ const ASSISTANT_RESPONSE_SCHEMA = {
   ],
 } as const;
 
+const GEMINI_RESPONSE_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    reply: {
+      type: Type.STRING,
+      description:
+        'Clear, polite, helpful response as YourNeed AI Assistant in the requested user language.',
+    },
+    shouldSuggestBooking: {
+      type: Type.BOOLEAN,
+      description:
+        'True only when the user wants to book a repair/service or find a technician.',
+    },
+    suggestedCategory: {
+      type: Type.STRING,
+      enum: [...VALID_CATEGORIES],
+      description: 'Best matching YourNeed service category.',
+    },
+    suggestedTitle: {
+      type: Type.STRING,
+      description:
+        'Concise booking headline (max 90 chars) if shouldSuggestBooking is true, otherwise empty string.',
+    },
+    suggestedDescription: {
+      type: Type.STRING,
+      description:
+        'Concise problem summary for a technician (max 300 chars) if shouldSuggestBooking is true, otherwise empty string.',
+    },
+    suggestedUrgency: {
+      type: Type.STRING,
+      enum: ['urgent_today', 'within_24h', 'flexible'],
+      description: 'Urgency level for a booking request.',
+    },
+    safetyWarning: {
+      type: Type.STRING,
+      nullable: true,
+      description:
+        'Short electrical/gas/appliance safety reminder ONLY when discussing electrical, AC, gas, water-heater, or appliance repairs; otherwise null.',
+    },
+  },
+  required: [
+    'reply',
+    'shouldSuggestBooking',
+    'suggestedCategory',
+    'suggestedTitle',
+    'suggestedDescription',
+    'suggestedUrgency',
+  ],
+};
+
+interface ParsedAssistantPayload {
+  reply?: string;
+  shouldSuggestBooking?: boolean;
+  suggestedCategory?: string;
+  suggestedTitle?: string;
+  suggestedDescription?: string;
+  suggestedUrgency?: string;
+  safetyWarning?: string | null;
+}
+
+function formatAssistantPayload(rawText: string, originalMessage: string) {
+  let parsed: ParsedAssistantPayload = {};
+  try {
+    parsed = JSON.parse(rawText);
+  } catch {
+    parsed = { reply: rawText, shouldSuggestBooking: false, safetyWarning: null };
+  }
+
+  const replyText =
+    typeof parsed.reply === 'string' && parsed.reply.trim()
+      ? parsed.reply.trim()
+      : rawText;
+
+  const cat = VALID_CATEGORIES.includes(
+    parsed.suggestedCategory as (typeof VALID_CATEGORIES)[number]
+  )
+    ? parsed.suggestedCategory!
+    : 'other';
+
+  const urgency =
+    parsed.suggestedUrgency === 'urgent_today' ||
+    parsed.suggestedUrgency === 'within_24h' ||
+    parsed.suggestedUrgency === 'flexible'
+      ? parsed.suggestedUrgency
+      : 'within_24h';
+
+  const cleanSafetyWarning =
+    typeof parsed.safetyWarning === 'string' && parsed.safetyWarning.trim()
+      ? parsed.safetyWarning.trim()
+      : undefined;
+
+  return {
+    reply: replyText,
+    safetyWarning: cleanSafetyWarning,
+    bookingDraft: parsed.shouldSuggestBooking
+      ? {
+          category: cat,
+          issueTitle: (parsed.suggestedTitle?.trim() || originalMessage).slice(0, 95),
+          issueDescription: (parsed.suggestedDescription?.trim() || originalMessage).slice(
+            0,
+            450
+          ),
+          urgency,
+        }
+      : null,
+  };
+}
+
+async function callGeminiAssistant(params: {
+  geminiKey: string;
+  instructions: string;
+  historyItems: EasyInputMessage[];
+  message: string;
+}): Promise<string> {
+  const ai = new GoogleGenAI({
+    apiKey: params.geminiKey,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      },
+    },
+  });
+
+  const conversationContents = [
+    ...params.historyItems.map((item) => ({
+      role: item.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: String(item.content) }],
+    })),
+    {
+      role: 'user',
+      parts: [{ text: params.message }],
+    },
+  ];
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-4-hydrogen',
+    contents: conversationContents,
+    config: {
+      systemInstruction: params.instructions,
+      responseMimeType: 'application/json',
+      responseSchema: GEMINI_RESPONSE_SCHEMA,
+    },
+  });
+
+  return (response.text ?? '').trim();
+}
+
+function isQuotaExhaustedError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const anyErr = err as { code?: unknown; type?: unknown; message?: unknown };
+  const code = typeof anyErr.code === 'string' ? anyErr.code : '';
+  const type = typeof anyErr.type === 'string' ? anyErr.type : '';
+  const msg = typeof anyErr.message === 'string' ? anyErr.message.toLowerCase() : '';
+  return (
+    code === 'credit_balance_exhausted' ||
+    code === 'insufficient_quota' ||
+    type === 'insufficient_quota' ||
+    msg.includes('no credits remaining') ||
+    msg.includes('exceeded your current quota')
+  );
+}
+
 app.post('/api/assistant', async (req: Request, res: Response) => {
   const clientIp = getClientIp(req);
   const rateCheck = checkRateLimit(clientIp);
@@ -197,11 +360,13 @@ app.post('/api/assistant', async (req: Request, res: Response) => {
     return;
   }
 
-  const apiKey = process.env.OPENAI_API_KEY?.trim();
-  if (!apiKey) {
+  const openaiKey = process.env.OPENAI_API_KEY?.trim();
+  const geminiKey = process.env.GEMINI_API_KEY?.trim();
+
+  if (!openaiKey && !geminiKey) {
     res.status(503).json({
       error:
-        'YourNeed AI Assistant is not configured yet. Please set OPENAI_API_KEY securely on the server (Settings > Secrets or .env).',
+        'YourNeed AI Assistant is not configured yet. Please set OPENAI_API_KEY or GEMINI_API_KEY in Settings > Secrets.',
     });
     return;
   }
@@ -251,6 +416,37 @@ app.post('/api/assistant', async (req: Request, res: Response) => {
         }))
     : [];
 
+  const tryGeminiFallback = async (): Promise<boolean> => {
+    if (!geminiKey) return false;
+    try {
+      const geminiRaw = await callGeminiAssistant({
+        geminiKey,
+        instructions,
+        historyItems,
+        message,
+      });
+      if (!geminiRaw) return false;
+      res.json(formatAssistantPayload(geminiRaw, message));
+      return true;
+    } catch (geminiErr) {
+      console.warn(
+        'Gemini assistant fallback failed:',
+        geminiErr instanceof Error ? geminiErr.message : String(geminiErr)
+      );
+      return false;
+    }
+  };
+
+  if (!openaiKey) {
+    const handled = await tryGeminiFallback();
+    if (!handled) {
+      res.status(502).json({
+        error: 'YourNeed AI Assistant could not generate a response. Please verify GEMINI_API_KEY in Settings > Secrets.',
+      });
+    }
+    return;
+  }
+
   const inputMessages: EasyInputMessage[] = [
     ...historyItems,
     {
@@ -260,9 +456,9 @@ app.post('/api/assistant', async (req: Request, res: Response) => {
   ];
 
   const client = new OpenAI({
-    apiKey,
+    apiKey: openaiKey,
     timeout: OPENAI_TIMEOUT_MS,
-    maxRetries: 1,
+    maxRetries: 0,
   });
 
   const controller = new AbortController();
@@ -289,63 +485,34 @@ app.post('/api/assistant', async (req: Request, res: Response) => {
 
     const rawText = (response.output_text || '').trim();
     if (!rawText) {
+      if (await tryGeminiFallback()) return;
       res.status(502).json({
         error: 'YourNeed AI Assistant returned an empty response. Please try again.',
       });
       return;
     }
 
-    let parsed: {
-      reply?: string;
-      shouldSuggestBooking?: boolean;
-      suggestedCategory?: string;
-      suggestedTitle?: string;
-      suggestedDescription?: string;
-      suggestedUrgency?: string;
-      safetyWarning?: string | null;
-    } = {};
-
-    try {
-      parsed = JSON.parse(rawText);
-    } catch {
-      parsed = { reply: rawText, shouldSuggestBooking: false, safetyWarning: null };
+    res.json(formatAssistantPayload(rawText, message));
+  } catch (err: unknown) {
+    if (err instanceof RateLimitError) {
+      const quotaExhausted = isQuotaExhaustedError(err);
+      console.warn(
+        quotaExhausted
+          ? 'OpenAI quota exhausted (429 insufficient_quota)'
+          : 'OpenAI transient rate limit (429)'
+      );
+      if (await tryGeminiFallback()) return;
+      res.status(429).json({
+        error: quotaExhausted
+          ? 'Your OpenAI API key has no remaining billing credits (insufficient_quota). Add credits in OpenAI Billing or configure GEMINI_API_KEY in Settings > Secrets.'
+          : 'YourNeed AI Assistant is currently busy due to API rate limits. Please wait a moment and try again.',
+      });
+      return;
     }
 
-    const replyText = typeof parsed.reply === 'string' && parsed.reply.trim() ? parsed.reply.trim() : rawText;
-
-    const cat = VALID_CATEGORIES.includes(
-      parsed.suggestedCategory as (typeof VALID_CATEGORIES)[number]
-    )
-      ? parsed.suggestedCategory!
-      : 'other';
-
-    const urgency =
-      parsed.suggestedUrgency === 'urgent_today' ||
-      parsed.suggestedUrgency === 'within_24h' ||
-      parsed.suggestedUrgency === 'flexible'
-        ? parsed.suggestedUrgency
-        : 'within_24h';
-
-    const cleanSafetyWarning =
-      typeof parsed.safetyWarning === 'string' && parsed.safetyWarning.trim()
-        ? parsed.safetyWarning.trim()
-        : undefined;
-
-    res.json({
-      reply: replyText,
-      safetyWarning: cleanSafetyWarning,
-      bookingDraft: parsed.shouldSuggestBooking
-        ? {
-            category: cat,
-            issueTitle: (parsed.suggestedTitle?.trim() || message).slice(0, 95),
-            issueDescription: (parsed.suggestedDescription?.trim() || message).slice(0, 450),
-            urgency,
-          }
-        : null,
-    });
-  } catch (err: unknown) {
     if (err instanceof APIConnectionTimeoutError || (err instanceof Error && err.name === 'AbortError')) {
-      console.error('OpenAI Responses API timeout');
+      console.warn('OpenAI Responses API timeout');
+      if (await tryGeminiFallback()) return;
       res.status(504).json({
         error: 'The AI Assistant took too long to respond. Please try again.',
       });
@@ -353,31 +520,26 @@ app.post('/api/assistant', async (req: Request, res: Response) => {
     }
 
     if (err instanceof AuthenticationError) {
-      console.error('OpenAI authentication error (401)');
+      console.warn('OpenAI authentication failed (401)');
+      if (await tryGeminiFallback()) return;
       res.status(401).json({
-        error: 'OpenAI authentication failed. Please verify the server OPENAI_API_KEY configuration.',
+        error: 'OpenAI authentication failed. Please verify the server OPENAI_API_KEY configuration in Settings > Secrets.',
       });
       return;
     }
 
     if (err instanceof PermissionDeniedError) {
-      console.error('OpenAI permission denied (403)');
+      console.warn('OpenAI permission denied (403)');
+      if (await tryGeminiFallback()) return;
       res.status(403).json({
         error: 'The configured OpenAI key does not have permission for this model.',
       });
       return;
     }
 
-    if (err instanceof RateLimitError) {
-      console.error('OpenAI rate limit error (429)');
-      res.status(429).json({
-        error: 'YourNeed AI Assistant is currently busy due to API rate limits. Please wait a moment and try again.',
-      });
-      return;
-    }
-
     if (err instanceof APIConnectionError) {
-      console.error('OpenAI network connection error');
+      console.warn('OpenAI network connection error');
+      if (await tryGeminiFallback()) return;
       res.status(503).json({
         error: 'Unable to connect to the OpenAI service right now. Please check your connection and try again.',
       });
@@ -386,7 +548,8 @@ app.post('/api/assistant', async (req: Request, res: Response) => {
 
     if (err instanceof APIError) {
       const upstreamStatus = typeof err.status === 'number' ? err.status : 502;
-      console.error(`OpenAI APIError (${upstreamStatus})`);
+      console.warn(`OpenAI APIError (${upstreamStatus})`);
+      if (await tryGeminiFallback()) return;
       const safeStatus = upstreamStatus >= 400 && upstreamStatus < 500 ? upstreamStatus : 502;
       res.status(safeStatus).json({
         error:
@@ -397,7 +560,8 @@ app.post('/api/assistant', async (req: Request, res: Response) => {
       return;
     }
 
-    console.error('Unexpected AI assistant server error');
+    console.warn('Unexpected AI assistant server error:', err instanceof Error ? err.message : String(err));
+    if (await tryGeminiFallback()) return;
     res.status(500).json({
       error: 'An unexpected server error occurred while contacting YourNeed AI Assistant.',
     });

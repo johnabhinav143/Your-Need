@@ -65,7 +65,7 @@ export const ReportComplaintModal: React.FC<ReportComplaintModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.16 }}
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#171717]/65 backdrop-blur-sm sm:p-4"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#040B08]/75 backdrop-blur-md sm:p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="report-modal-title"
@@ -75,18 +75,18 @@ export const ReportComplaintModal: React.FC<ReportComplaintModalProps> = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 28, opacity: 0 }}
             transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full sm:max-w-md bg-white dark:bg-[#171717] rounded-t-3xl sm:rounded-2xl border border-[#E8DFC8] dark:border-[#2E2E2E] shadow-2xl overflow-hidden"
+            className="w-full sm:max-w-lg yn-glass-card yn-tricolor-border rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden"
           >
-            <div className="px-5 py-4 border-b border-[#EFE8D5] dark:border-[#2E2E2E] flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-9 h-9 rounded-xl bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 flex items-center justify-center shrink-0">
+            <div className="px-6 py-4.5 border-b border-[#075E36]/12 dark:border-white/[0.08] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-600 dark:text-rose-300 flex items-center justify-center shrink-0">
                   <ShieldAlert className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
-                  <h2 id="report-modal-title" className="text-base font-bold text-[#171717] dark:text-white truncate">
+                  <h2 id="report-modal-title" className="text-base font-bold text-[#18231E] dark:text-[#FFFDF8] truncate">
                     Report or File Complaint
                   </h2>
-                  <p className="text-xs text-[#595959] dark:text-[#B5ADA0] truncate">
+                  <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] truncate mt-0.5">
                     Target: {targetName}
                   </p>
                 </div>
@@ -95,22 +95,22 @@ export const ReportComplaintModal: React.FC<ReportComplaintModalProps> = ({
                 type="button"
                 onClick={onClose}
                 aria-label="Close report dialog"
-                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#595959] hover:bg-[#FFFDF7] dark:hover:bg-[#121212]"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#43564D] dark:text-[#9CB0A6] hover:bg-[#FF9933]/10 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-5 space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
               <div>
-                <label htmlFor="report-reason" className="block text-xs font-semibold text-[#292929] dark:text-[#DDD6C7] mb-1.5">
+                <label htmlFor="report-reason" className="block text-xs font-semibold text-[#43564D] dark:text-[#9CB0A6] mb-2">
                   Reason for report
                 </label>
                 <select
                   id="report-reason"
                   value={reason}
                   onChange={(e) => setReason(e.target.value as ReportReason)}
-                  className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7]"
+                  className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-rose-500"
                 >
                   {REPORT_REASON_OPTIONS.map((opt) => (
                     <option key={opt.id} value={opt.id}>
@@ -121,7 +121,7 @@ export const ReportComplaintModal: React.FC<ReportComplaintModalProps> = ({
               </div>
 
               <div>
-                <label htmlFor="report-details" className="block text-xs font-semibold text-[#292929] dark:text-[#DDD6C7] mb-1.5">
+                <label htmlFor="report-details" className="block text-xs font-semibold text-[#43564D] dark:text-[#9CB0A6] mb-2">
                   Describe what happened
                 </label>
                 <textarea
@@ -132,12 +132,12 @@ export const ReportComplaintModal: React.FC<ReportComplaintModalProps> = ({
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                   placeholder="Include billing discrepancies, suspicious behavior, poor repair quality, or refund request details..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  className="w-full px-4 py-3 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] placeholder:text-[#5B6F65] dark:placeholder:text-[#7E948A] focus:outline-none focus:ring-2 focus:ring-rose-500"
                 />
               </div>
 
-              <div className="rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 p-3 flex items-start gap-2 text-xs text-amber-900 dark:text-amber-200">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <div className="rounded-2xl bg-[#FF9933]/12 border border-[#FF9933]/35 p-4 flex items-start gap-3 text-xs text-[#18231E] dark:text-[#FFD28A] leading-relaxed">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-[#E87516] dark:text-[#FFB866]" />
                 <span>
                   Reports are reviewed by the Your Need safety &amp; dispute team to verify accounts and resolve payment disputes.
                 </span>
@@ -147,18 +147,18 @@ export const ReportComplaintModal: React.FC<ReportComplaintModalProps> = ({
                 <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">{errorMsg}</p>
               ) : null}
 
-              <div className="flex items-center gap-2.5 pt-1">
+              <div className="flex items-center gap-3 pt-1">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="min-h-[44px] px-4 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] text-sm font-medium text-[#292929] dark:text-[#E8E2D5]"
+                  className="min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] hover:bg-[#E8EDF2] dark:hover:bg-white/[0.06] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 min-h-[44px] px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 disabled:opacity-60 transition-colors"
+                  className="flex-1 min-h-[46px] px-5 py-2.5 rounded-xl bg-rose-600 text-white text-sm font-semibold hover:bg-rose-700 disabled:opacity-60 transition-colors"
                 >
                   {submitting ? 'Submitting report...' : 'Submit Report'}
                 </button>

@@ -129,7 +129,7 @@ export const BlurRevealText: React.FC<BlurRevealTextProps> = ({
               }}
               className={`inline-block mr-[0.26em] last:mr-0 will-change-transform origin-bottom ${
                 isGoldAccent
-                  ? 'bg-gradient-to-r from-[#8F6412] via-[#D6A84F] to-[#8F6412] dark:from-[#F3D999] dark:via-[#D6A84F] dark:to-[#F3D999] bg-clip-text text-transparent animate-brand-gradient'
+                  ? 'bg-gradient-to-r from-[#E87516] via-[#FF9933] to-[#138808] dark:from-[#FFB866] dark:via-[#FFFDF8] dark:to-[#35C46A] bg-clip-text text-transparent animate-brand-gradient'
                   : ''
               }`}
             >
@@ -209,7 +209,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
         {showCursor && !done ? (
           <span
             aria-hidden="true"
-            className="inline-block w-[2px] h-[0.95em] align-middle ml-0.5 bg-[#D6A84F] animate-pulse"
+            className="inline-block w-[2px] h-[0.95em] align-middle ml-0.5 bg-[#FF9933] animate-pulse"
           />
         ) : null}
       </Tag>
@@ -240,13 +240,13 @@ export const GlitchTitle: React.FC<GlitchTitleProps> = ({
       <span className="relative z-10">{text}</span>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 text-[#D6A84F] opacity-0 group-hover:opacity-75 animate-glitch-gold select-none"
+        className="pointer-events-none absolute inset-0 text-[#FF9933] opacity-0 group-hover:opacity-75 animate-glitch-gold select-none"
       >
         {text}
       </span>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 text-[#FFF8EA] dark:text-[#F3D999] opacity-0 group-hover:opacity-45 translate-x-[1px] animate-glitch-gold select-none"
+        className="pointer-events-none absolute inset-0 text-[#138808] dark:text-[#35C46A] opacity-0 group-hover:opacity-55 translate-x-[1px] animate-glitch-gold select-none"
       >
         {text}
       </span>
@@ -359,7 +359,7 @@ export const GsapStaggerHeadline: React.FC<GsapStaggerHeadlineProps> = ({
               aria-hidden="true"
               className={`inline-block mr-[0.26em] last:mr-0 will-change-transform ${
                 isAccent
-                  ? 'bg-gradient-to-r from-[#8F6412] via-[#D6A84F] to-[#8F6412] dark:from-[#F3D999] dark:via-[#D6A84F] dark:to-[#F3D999] bg-clip-text text-transparent animate-brand-gradient'
+                  ? 'bg-gradient-to-r from-[#E87516] via-[#FF9933] to-[#138808] dark:from-[#FFB866] dark:via-[#FFFDF8] dark:to-[#35C46A] bg-clip-text text-transparent animate-brand-gradient'
                   : ''
               }`}
             >
@@ -518,7 +518,7 @@ export const LetterSweepBrand: React.FC<LetterSweepBrandProps> = ({
             delay: idx * 0.025,
             ease: EASE_LUXURY,
           }}
-          className="inline-block bg-gradient-to-r from-[#171717] via-[#8F6412] to-[#171717] dark:from-white dark:via-[#D6A84F] dark:to-white bg-clip-text text-transparent animate-brand-gradient"
+          className="inline-block bg-gradient-to-r from-[#E87516] via-[#18231E] to-[#138808] dark:from-[#FFB866] dark:via-[#FFFDF8] dark:to-[#35C46A] bg-clip-text text-transparent animate-brand-gradient"
         >
           {char === ' ' ? '\u00A0' : char}
         </motion.span>

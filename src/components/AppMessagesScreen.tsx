@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   Bell,
   Bot,
+  CheckCheck,
   MessageSquare,
   Send,
   Wrench,
@@ -19,6 +20,7 @@ import {
   RepairJob,
 } from '../types';
 import { CategoryIcon } from './CategoryIcon';
+import { getNotificationIcon } from './NotificationCenter';
 
 interface AppMessagesScreenProps {
   currentUid: string | null;
@@ -26,6 +28,8 @@ interface AppMessagesScreenProps {
   myCustomerJobs: RepairJob[];
   myTechnicianJobs: RepairJob[];
   notifications: AppNotification[];
+  initialTab?: 'chats' | 'updates';
+  onMarkAllRead?: () => void;
   onOpenJobDetail: (job: RepairJob) => void;
   onOpenAiAssistant: () => void;
   onOpenAuth: (reason: string) => void;
@@ -37,12 +41,18 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
   myCustomerJobs,
   myTechnicianJobs,
   notifications,
+  initialTab = 'chats',
+  onMarkAllRead,
   onOpenJobDetail,
   onOpenAiAssistant,
   onOpenAuth,
 }) => {
-  const [activeTab, setActiveTab] = useState<'chats' | 'updates'>('chats');
+  const [activeTab, setActiveTab] = useState<'chats' | 'updates'>(initialTab);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
   const [messages, setMessages] = useState<JobMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -112,30 +122,30 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
 
   if (!currentUid) {
     return (
-      <div className="rounded-2xl bg-white dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.08] p-8 text-center space-y-5">
-        <div className="w-12 h-12 rounded-xl bg-[#F3EEE2] dark:bg-[#1C1C1C] flex items-center justify-center text-[#D6AE53] mx-auto">
-          <MessageSquare className="w-6 h-6" />
+      <div className="rounded-2xl yn-glass-card yn-tricolor-border p-10 text-center space-y-6">
+        <div className="w-14 h-14 rounded-2xl bg-[#FF9933]/15 border border-[#FF9933]/35 flex items-center justify-center text-[#E87516] dark:text-[#FFB866] mx-auto">
+          <MessageSquare className="w-7 h-7" />
         </div>
-        <div className="space-y-1.5">
-          <h2 className="text-lg font-bold text-[#171717] dark:text-white font-display">
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold font-display yn-tricolor-text">
             Messages &amp; Live Dispatch Chat
           </h2>
-          <p className="text-xs text-[#595959] dark:text-[#A0A0A0] max-w-sm mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#43564D] dark:text-[#9CB0A6] max-w-md mx-auto leading-relaxed">
             Sign in with Google to chat securely with your matched service providers and receive real-time booking updates.
           </p>
         </div>
-        <div className="flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3.5">
           <button
             type="button"
             onClick={() => onOpenAuth('Sign in with Google to view your booking chats and notifications.')}
-            className="min-h-[44px] px-5 rounded-xl bg-[#D6AE53] text-[#080808] text-xs font-bold"
+            className="min-h-[46px] px-6 rounded-xl yn-btn-saffron text-xs sm:text-sm font-bold"
           >
             Sign In to Message
           </button>
           <button
             type="button"
             onClick={onOpenAiAssistant}
-            className="min-h-[44px] px-4 rounded-xl bg-[#F3EEE2] dark:bg-[#1C1C1C] text-[#D6AE53] text-xs font-semibold inline-flex items-center gap-2"
+            className="min-h-[46px] px-5 rounded-xl bg-[#E8EDF2] dark:bg-[#07130F] border border-[#138808]/25 dark:border-[#35C46A]/35 text-[#138808] dark:text-[#35C46A] text-xs sm:text-sm font-semibold inline-flex items-center gap-2 hover:border-[#35C46A]"
           >
             <Bot className="w-4 h-4" />
             <span>Ask AI Concierge</span>
@@ -146,17 +156,17 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7 sm:space-y-8">
       {/* Segment Switch + AI Concierge shortcut */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-1 p-1.5 rounded-2xl bg-white dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.08] flex-1 sm:flex-initial">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-2 p-2 rounded-2xl yn-glass-card flex-1 sm:flex-initial">
           <button
             type="button"
             onClick={() => setActiveTab('chats')}
-            className={`flex-1 sm:flex-initial min-h-[40px] px-4 rounded-xl text-xs font-semibold transition-colors ${
+            className={`flex-1 sm:flex-initial min-h-[44px] px-5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
               activeTab === 'chats'
-                ? 'bg-[#D6AE53] text-[#080808] font-bold'
-                : 'text-[#595959] dark:text-[#A0A0A0]'
+                ? 'yn-btn-saffron font-bold'
+                : 'text-[#43564D] dark:text-[#9CB0A6]'
             }`}
           >
             Chats ({chatThreads.length})
@@ -164,10 +174,10 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
           <button
             type="button"
             onClick={() => setActiveTab('updates')}
-            className={`flex-1 sm:flex-initial min-h-[40px] px-4 rounded-xl text-xs font-semibold transition-colors ${
+            className={`flex-1 sm:flex-initial min-h-[44px] px-5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
               activeTab === 'updates'
-                ? 'bg-[#D6AE53] text-[#080808] font-bold'
-                : 'text-[#595959] dark:text-[#A0A0A0]'
+                ? 'yn-btn-emerald font-bold'
+                : 'text-[#43564D] dark:text-[#9CB0A6]'
             }`}
           >
             Updates ({notifications.filter((n) => !n.read).length})
@@ -177,76 +187,107 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
         <button
           type="button"
           onClick={onOpenAiAssistant}
-          className="min-h-[42px] px-4 rounded-xl bg-white dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.08] text-[#171717] dark:text-white text-xs font-semibold inline-flex items-center gap-2 hover:border-[#D6AE53]/50 transition-colors"
+          className="min-h-[46px] px-5 rounded-xl yn-glass-card text-[#18231E] dark:text-[#FFFDF8] text-xs sm:text-sm font-semibold inline-flex items-center gap-2.5 hover:border-[#FF9933]/50 transition-colors"
         >
-          <Bot className="w-4 h-4 text-[#D6AE53]" />
+          <Bot className="w-4 h-4 text-[#E87516] dark:text-[#FF9933]" />
           <span>AI Concierge</span>
         </button>
       </div>
 
       {activeTab === 'updates' ? (
-        <div className="rounded-2xl bg-white dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.08] divide-y divide-black/[0.06] dark:divide-white/[0.06]">
-          {notifications.length === 0 ? (
-            <div className="p-8 text-center space-y-2">
-              <Bell className="w-7 h-7 text-[#D6AE53] mx-auto" />
-              <p className="text-sm font-semibold text-[#171717] dark:text-white">
-                No updates yet
-              </p>
-              <p className="text-xs text-[#595959] dark:text-[#A0A0A0]">
-                Quote approvals, ETA alerts, and payment confirmations appear here.
-              </p>
-            </div>
-          ) : (
-            notifications.map((n) => (
+        <div className="rounded-2xl yn-glass-card yn-tricolor-border overflow-hidden">
+          {notifications.some((n) => !n.read) && onMarkAllRead ? (
+            <div className="px-6 py-3.5 border-b border-[#075E36]/12 dark:border-white/[0.08] flex items-center justify-between bg-[#E8EDF2]/75 dark:bg-[#07130F]/80">
+              <span className="text-xs sm:text-sm font-semibold text-[#43564D] dark:text-[#9CB0A6]">
+                {notifications.filter((n) => !n.read).length} unread notifications
+              </span>
               <button
-                key={n.id}
                 type="button"
-                onClick={async () => {
-                  if (!n.read) await markNotificationRead(n.id);
-                  const found = [...myCustomerJobs, ...myTechnicianJobs].find(
-                    (j) => j.id === n.jobId
-                  );
-                  if (found) onOpenJobDetail(found);
-                }}
-                className={`w-full p-4 text-left hover:bg-[#F6F3EC] dark:hover:bg-[#1C1C1C] transition-colors first:rounded-t-2xl last:rounded-b-2xl ${
-                  !n.read ? 'bg-[#D6AE53]/10' : ''
-                }`}
+                onClick={onMarkAllRead}
+                className="min-h-[38px] px-3.5 rounded-xl bg-[#FF9933]/15 text-[#E87516] dark:text-[#FFB866] text-xs font-bold inline-flex items-center gap-1.5 hover:bg-[#FF9933]/25 transition-colors"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-bold text-[#171717] dark:text-white">
-                    {n.title}
-                  </span>
-                  <span className="text-[11px] text-[#A0A0A0] shrink-0">
-                    {formatTimestamp(n.createdAt)}
-                  </span>
-                </div>
-                <p className="text-xs text-[#595959] dark:text-[#A0A0A0] mt-1 leading-relaxed">
-                  {n.body}
-                </p>
+                <CheckCheck className="w-4 h-4" />
+                <span>Mark all read</span>
               </button>
-            ))
-          )}
+            </div>
+          ) : null}
+          <div className="divide-y divide-[#075E36]/10 dark:divide-white/[0.08]">
+            {notifications.length === 0 ? (
+              <div className="p-10 text-center space-y-3">
+                <Bell className="w-8 h-8 text-[#E87516] dark:text-[#FF9933] mx-auto" />
+                <p className="text-base font-semibold text-[#18231E] dark:text-[#FFFDF8]">
+                  No updates yet
+                </p>
+                <p className="text-xs sm:text-sm text-[#43564D] dark:text-[#9CB0A6] max-w-md mx-auto">
+                  Quote approvals, ETA alerts, chat replies, and payment confirmations appear here.
+                </p>
+              </div>
+            ) : (
+              notifications.map((n) => {
+                const Icon = getNotificationIcon(n.type);
+                return (
+                  <button
+                    key={n.id}
+                    type="button"
+                    onClick={async () => {
+                      if (!n.read && !n.id.startsWith('local_')) await markNotificationRead(n.id);
+                      const found = [...myCustomerJobs, ...myTechnicianJobs].find(
+                        (j) => j.id === n.jobId
+                      );
+                      if (found) onOpenJobDetail(found);
+                    }}
+                    className={`w-full p-5 sm:p-6 text-left flex items-start gap-4 hover:bg-[#E8EDF2]/60 dark:hover:bg-white/[0.04] transition-colors ${
+                      !n.read ? 'bg-[#FF9933]/10' : ''
+                    }`}
+                  >
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                        !n.read
+                          ? 'yn-btn-saffron'
+                          : 'bg-[#E8EDF2] dark:bg-[#07130F] border border-[#075E36]/15 dark:border-white/[0.08] text-[#138808] dark:text-[#35C46A]'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0 flex-1 space-y-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs sm:text-sm font-bold text-[#18231E] dark:text-[#FFFDF8]">
+                          {n.title}
+                        </span>
+                        <span className="text-[11px] text-[#43564D] dark:text-[#9CB0A6] shrink-0">
+                          {formatTimestamp(n.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] leading-relaxed">
+                        {n.body}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6">
           {/* Thread List */}
           <div
-            className={`lg:col-span-5 rounded-2xl bg-white dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.08] overflow-hidden ${
+            className={`lg:col-span-5 rounded-2xl yn-glass-card overflow-hidden ${
               activeThread ? 'hidden lg:block' : 'block'
             }`}
           >
             {chatThreads.length === 0 ? (
               <div className="p-8 text-center space-y-2">
-                <Wrench className="w-7 h-7 text-[#D6AE53] mx-auto" />
-                <p className="text-sm font-semibold text-[#171717] dark:text-white">
+                <Wrench className="w-7 h-7 text-[#138808] dark:text-[#35C46A] mx-auto" />
+                <p className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                   No active booking chats yet
                 </p>
-                <p className="text-xs text-[#595959] dark:text-[#A0A0A0]">
+                <p className="text-xs text-[#43564D] dark:text-[#9CB0A6]">
                   Once a technician accepts a booking, real-time private messaging unlocks here.
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-black/[0.06] dark:divide-white/[0.06]">
+              <div className="divide-y divide-[#075E36]/10 dark:divide-white/[0.08]">
                 {chatThreads.map((job) => {
                   const selected = activeThread?.id === job.id;
                   const counterpartName =
@@ -258,25 +299,25 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
                       key={job.id}
                       type="button"
                       onClick={() => setSelectedJobId(job.id)}
-                      className={`w-full p-4 text-left flex items-center gap-3.5 transition-colors ${
+                      className={`w-full p-5 text-left flex items-center gap-4 transition-colors ${
                         selected
-                          ? 'bg-[#D6AE53]/12'
-                          : 'hover:bg-[#F6F3EC] dark:hover:bg-[#1C1C1C]'
+                          ? 'bg-[#FF9933]/14 border-l-2 border-[#FF9933]'
+                          : 'hover:bg-[#E8EDF2]/60 dark:hover:bg-white/[0.04]'
                       }`}
                     >
-                      <div className="w-10 h-10 rounded-xl bg-[#F3EEE2] dark:bg-[#1C1C1C] text-[#D6AE53] flex items-center justify-center shrink-0">
+                      <div className="w-11 h-11 rounded-xl bg-[#E8EDF2] dark:bg-[#07130F] border border-[#075E36]/15 dark:border-[#FF9933]/25 text-[#E87516] dark:text-[#FFB866] flex items-center justify-center shrink-0">
                         <CategoryIcon category={job.applianceCategory} className="w-5 h-5" />
                       </div>
-                      <div className="min-w-0 flex-1 space-y-0.5">
+                      <div className="min-w-0 flex-1 space-y-1">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm font-semibold text-[#171717] dark:text-white truncate">
+                          <p className="text-sm font-semibold text-[#18231E] dark:text-[#FFFDF8] truncate">
                             {counterpartName}
                           </p>
-                          <span className="text-[11px] font-semibold text-[#D6AE53] shrink-0">
+                          <span className="text-[11px] font-semibold text-[#138808] dark:text-[#35C46A] shrink-0">
                             {STATUS_LABELS[job.status]}
                           </span>
                         </div>
-                        <p className="text-xs text-[#595959] dark:text-[#A0A0A0] truncate">
+                        <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] truncate">
                           {job.issueTitle}
                         </p>
                       </div>
@@ -289,39 +330,39 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
 
           {/* Active Chat Room */}
           <div
-            className={`lg:col-span-7 rounded-2xl bg-white dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.08] flex flex-col min-h-[420px] max-h-[68vh] ${
+            className={`lg:col-span-7 rounded-2xl yn-glass-card yn-tricolor-border flex flex-col min-h-[440px] max-h-[70vh] ${
               activeThread ? 'block' : 'hidden lg:flex'
             }`}
           >
             {!activeThread ? (
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-2">
-                <MessageSquare className="w-8 h-8 text-[#D6AE53]" />
-                <p className="text-sm font-semibold text-[#171717] dark:text-white">
+              <div className="flex-1 flex flex-col items-center justify-center p-10 text-center space-y-3">
+                <MessageSquare className="w-9 h-9 text-[#E87516] dark:text-[#FF9933]" />
+                <p className="text-base font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                   Select a booking conversation
                 </p>
-                <p className="text-xs text-[#595959] dark:text-[#A0A0A0]">
+                <p className="text-xs sm:text-sm text-[#43564D] dark:text-[#9CB0A6]">
                   Coordinate arrival gate notes, spare parts, or timing live.
                 </p>
               </div>
             ) : (
               <>
-                <div className="px-5 py-3.5 border-b border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between gap-3 shrink-0">
-                  <div className="flex items-center gap-3 min-w-0">
+                <div className="px-6 py-4 border-b border-[#075E36]/12 dark:border-white/[0.08] flex items-center justify-between gap-4 shrink-0">
+                  <div className="flex items-center gap-3.5 min-w-0">
                     <button
                       type="button"
                       onClick={() => setSelectedJobId(null)}
-                      className="lg:hidden min-h-[38px] min-w-[38px] rounded-xl bg-[#F3EEE2] dark:bg-[#1C1C1C] flex items-center justify-center text-[#D6AE53]"
+                      className="lg:hidden min-h-[42px] min-w-[42px] rounded-xl bg-[#E8EDF2] dark:bg-[#07130F] flex items-center justify-center text-[#E87516] dark:text-[#FF9933]"
                       aria-label="Back to chat list"
                     >
                       <ArrowLeft className="w-4 h-4" />
                     </button>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-[#171717] dark:text-white truncate">
+                    <div className="min-w-0 space-y-0.5">
+                      <p className="text-sm font-bold text-[#18231E] dark:text-[#FFFDF8] truncate">
                         {activeThread.customerId === currentUid
                           ? activeThread.technicianName || 'Specialist'
                           : activeThread.customerName}
                       </p>
-                      <p className="text-xs text-[#A0A0A0] truncate">
+                      <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] truncate">
                         {activeThread.issueTitle} · {STATUS_LABELS[activeThread.status]}
                       </p>
                     </div>
@@ -329,15 +370,15 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
                   <button
                     type="button"
                     onClick={() => onOpenJobDetail(activeThread)}
-                    className="min-h-[38px] px-3.5 rounded-xl bg-[#F3EEE2] dark:bg-[#1C1C1C] text-xs font-semibold text-[#D6AE53] shrink-0"
+                    className="min-h-[42px] px-4 rounded-xl bg-[#E8EDF2] dark:bg-[#07130F] border border-[#075E36]/15 dark:border-[#35C46A]/35 text-xs font-semibold text-[#138808] dark:text-[#35C46A] shrink-0"
                   >
                     Track Job
                   </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto overscroll-y-contain p-5 space-y-3">
+                <div className="flex-1 overflow-y-auto overscroll-y-contain p-5 sm:p-6 space-y-4">
                   {messages.length === 0 ? (
-                    <p className="text-xs text-[#A0A0A0] text-center py-8">
+                    <p className="text-xs sm:text-sm text-[#43564D] dark:text-[#9CB0A6] text-center py-10">
                       No messages yet. Say hello or confirm arrival instructions below.
                     </p>
                   ) : (
@@ -349,16 +390,16 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
                           className={`flex ${mine ? 'justify-end' : 'justify-start'}`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-2xl px-4 py-3 text-xs ${
+                            className={`max-w-[80%] rounded-2xl px-4.5 py-3 text-xs sm:text-sm ${
                               mine
-                                ? 'bg-[#D6AE53] text-[#080808] font-medium'
-                                : 'bg-[#F3EEE2] dark:bg-[#1C1C1C] text-[#171717] dark:text-white'
+                                ? 'yn-btn-saffron font-medium'
+                                : 'bg-[#E8EDF2] dark:bg-[#07130F] border border-[#075E36]/15 dark:border-white/[0.08] text-[#18231E] dark:text-[#FFFDF8]'
                             }`}
                           >
                             <p className="leading-relaxed">{msg.text}</p>
                             <p
-                              className={`text-[11px] mt-1 ${
-                                mine ? 'text-[#080808]/70' : 'text-[#A0A0A0]'
+                              className={`text-[11px] mt-1.5 ${
+                                mine ? 'text-[#07130F]/75' : 'text-[#43564D] dark:text-[#9CB0A6]'
                               }`}
                             >
                               {msg.senderName} · {formatTimestamp(msg.createdAt)}
@@ -373,7 +414,7 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
 
                 <form
                   onSubmit={handleSend}
-                  className="p-4 border-t border-black/[0.06] dark:border-white/[0.06] flex items-center gap-2.5 shrink-0"
+                  className="p-4 sm:p-5 border-t border-[#075E36]/12 dark:border-white/[0.08] flex items-center gap-3 shrink-0"
                 >
                   <input
                     type="text"
@@ -381,13 +422,13 @@ export const AppMessagesScreen: React.FC<AppMessagesScreenProps> = ({
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     placeholder="Write a message..."
-                    className="flex-1 min-h-[44px] px-4 rounded-xl bg-[#F3EEE2] dark:bg-[#1C1C1C] text-xs text-[#171717] dark:text-white placeholder:text-[#A0A0A0] focus:outline-none focus:ring-2 focus:ring-[#D6AE53]"
+                    className="flex-1 min-h-[48px] px-4 rounded-xl bg-[#FFFDF8] dark:bg-[#07130F] border border-[#075E36]/20 dark:border-white/[0.12] text-sm text-[#18231E] dark:text-[#FFFDF8] placeholder:text-[#5B6F65] dark:placeholder:text-[#7E948A] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                   />
                   <button
                     type="submit"
                     disabled={sending || !draft.trim()}
                     aria-label="Send message"
-                    className="min-h-[44px] min-w-[44px] rounded-xl bg-[#D6AE53] text-[#080808] flex items-center justify-center disabled:opacity-50"
+                    className="min-h-[48px] min-w-[48px] rounded-xl yn-btn-saffron flex items-center justify-center disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
                   </button>

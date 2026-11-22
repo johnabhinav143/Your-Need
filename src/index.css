@@ -2,28 +2,47 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-brand: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
-  --font-mono: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
 
 @layer base {
   :root {
     --font-brand: 'Cinzel', 'Cormorant Garamond', Georgia, serif;
     --font-display: 'Cormorant Garamond', Georgia, serif;
-    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    --font-mono: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-sans: 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Manrope', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 
-    --yn-primary: #080808;
-    --yn-surface: #141414;
-    --yn-surface-secondary: #1C1C1C;
-    --yn-accent: #D6AE53;
-    --yn-gold-bright: #E5C573;
-    --yn-gold-deep: #9E7628;
-    --yn-bg: #F6F3EC;
-    --yn-text: #1B1915;
-    --yn-text-secondary: #A0A0A0;
+    /* Darkened Indian Tricolour Master Palette */
+    --yn-saffron: #FF9933;
+    --yn-saffron-deep: #E87516;
+    --yn-saffron-glow: #FFB866;
+    --yn-gold-highlight: #FFD28A;
+
+    --yn-white: #FFFFFF;
+    --yn-ivory: #FFFDF8;
+    --yn-light-bg: #F8FAFC;
+    --yn-silver: #E8EDF2;
+
+    --yn-green: #138808;
+    --yn-emerald-deep: #075E36;
+    --yn-green-light: #35C46A;
+    --yn-green-glow: #7DFF9B;
+
+    --yn-navy: #071B16;
+    --yn-charcoal: #101A17;
+    --yn-dark-bg: #07130F;
+    --yn-text-light-mode: #18231E;
+
+    --yn-primary: #07130F;
+    --yn-surface: #071B16;
+    --yn-surface-secondary: #101A17;
+    --yn-accent: #FF9933;
+    --yn-bg: #F8FAFC;
+    --yn-text: #18231E;
+    --yn-text-secondary: #4D5E57;
   }
 
   html,
@@ -35,7 +54,7 @@
 
   * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(214, 174, 83, 0.5) transparent;
+    scrollbar-color: rgba(232, 117, 22, 0.45) transparent;
   }
 
   *::-webkit-scrollbar {
@@ -48,7 +67,7 @@
   }
 
   *::-webkit-scrollbar-thumb {
-    background-color: rgba(214, 174, 83, 0.45);
+    background: linear-gradient(180deg, rgba(255, 153, 51, 0.55), rgba(53, 196, 106, 0.5));
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
@@ -56,7 +75,7 @@
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(214, 174, 83, 0.85);
+    background: linear-gradient(180deg, rgba(255, 153, 51, 0.85), rgba(53, 196, 106, 0.8));
   }
 
   html.hide-scrollbars,
@@ -73,15 +92,15 @@
 
   body {
     font-family: var(--font-sans);
-    background-color: #F6F0E2;
-    color: #1B1915;
+    background-color: #F8FAFC;
+    color: #18231E;
     transition: background-color 0.25s ease, color 0.25s ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   html.dark body {
-    background-color: #080808;
-    color: #FFFFFF;
+    background-color: #07130F;
+    color: #FFFDF8;
   }
 
   code, kbd, pre, samp, .font-mono {
@@ -109,6 +128,10 @@
   height: 0;
 }
 
+/* =========================================================
+   CINEMATIC TRICOLOUR KEYFRAMES (GPU COMPOSITOR SAFE)
+   ========================================================= */
+
 @keyframes brandGradientFlow {
   0% {
     background-position: 0% 50%;
@@ -125,7 +148,7 @@
   0% {
     transform: translateX(-140%) skewX(-18deg);
   }
-  55%, 100% {
+  52%, 100% {
     transform: translateX(240%) skewX(-18deg);
   }
 }
@@ -170,13 +193,47 @@
   }
 }
 
+@keyframes particleDriftUp {
+  0% {
+    transform: translate3d(0, 20px, 0) scale(0.7);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.85;
+  }
+  82% {
+    opacity: 0.72;
+  }
+  100% {
+    transform: translate3d(18px, -110px, 0) scale(1.05);
+    opacity: 0;
+  }
+}
+
+@keyframes streakFallDown {
+  0% {
+    transform: translate3d(0, -18vh, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.55;
+  }
+  80% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate3d(-10px, 115vh, 0);
+    opacity: 0;
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 .animate-brand-gradient {
-  background-size: 200% 200%;
-  animation: brandGradientFlow 6s ease-in-out infinite;
+  background-size: 220% 220%;
+  animation: brandGradientFlow 6.5s ease-in-out infinite;
 }
 
 .animate-gold-sheen {
@@ -197,6 +254,129 @@ html {
   animation: cyberGlitchShift 5.5s steps(1, end) infinite;
 }
 
+.animate-particle-drift {
+  animation: particleDriftUp 11s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-streak-fall {
+  animation: streakFallDown 9s linear infinite;
+  will-change: transform, opacity;
+}
+
+/* =========================================================
+   DARKENED INDIAN TRICOLOUR SURFACE & CONTROL UTILITIES
+   ========================================================= */
+
+.yn-tricolor-bar {
+  background: linear-gradient(90deg, #E87516 0%, #FF9933 28%, #FFFDF8 50%, #35C46A 74%, #075E36 100%);
+  background-size: 200% 100%;
+  animation: brandGradientFlow 8s ease-in-out infinite;
+}
+
+.yn-tricolor-text {
+  background: linear-gradient(95deg, #E87516 0%, #FF9933 28%, #18231E 50%, #138808 75%, #075E36 100%);
+  background-size: 220% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: brandGradientFlow 7s ease-in-out infinite;
+}
+
+html.dark .yn-tricolor-text {
+  background: linear-gradient(95deg, #FFB866 0%, #FF9933 26%, #FFFDF8 52%, #35C46A 78%, #7DFF9B 100%);
+  background-size: 220% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.yn-glass-card {
+  background: rgba(255, 253, 248, 0.92);
+  border: 1px solid rgba(7, 94, 54, 0.14);
+  box-shadow:
+    0 12px 30px -18px rgba(7, 27, 22, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(14px);
+}
+
+html.dark .yn-glass-card {
+  background: linear-gradient(155deg, rgba(16, 26, 23, 0.92) 0%, rgba(7, 27, 22, 0.88) 100%);
+  border: 1px solid rgba(255, 153, 51, 0.18);
+  box-shadow:
+    0 18px 42px -22px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(53, 196, 106, 0.08),
+    inset 0 1px 0 rgba(255, 253, 248, 0.07);
+  backdrop-filter: blur(16px);
+}
+
+.yn-tricolor-border {
+  position: relative;
+}
+
+.yn-tricolor-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(125deg, rgba(255, 153, 51, 0.55), rgba(255, 253, 248, 0.25), rgba(53, 196, 106, 0.55));
+  background-size: 200% 200%;
+  animation: brandGradientFlow 8s ease-in-out infinite;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.yn-btn-saffron {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #E87516 0%, #FF9933 52%, #FFB866 100%);
+  color: #07130F;
+  font-weight: 700;
+  box-shadow:
+    0 10px 24px -10px rgba(232, 117, 22, 0.58),
+    inset 0 1px 0 rgba(255, 253, 248, 0.45),
+    inset 0 -2px 0 rgba(120, 48, 4, 0.28);
+  transition: transform 0.16s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.yn-btn-saffron:hover:not(:disabled) {
+  filter: brightness(1.06);
+  box-shadow:
+    0 14px 30px -10px rgba(255, 153, 51, 0.65),
+    inset 0 1px 0 rgba(255, 253, 248, 0.6);
+}
+
+.yn-btn-saffron:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+}
+
+.yn-btn-emerald {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #075E36 0%, #138808 55%, #1FA14B 100%);
+  color: #FFFDF8;
+  font-weight: 700;
+  box-shadow:
+    0 10px 24px -10px rgba(19, 136, 8, 0.55),
+    inset 0 1px 0 rgba(125, 255, 155, 0.28),
+    inset 0 -2px 0 rgba(4, 38, 22, 0.45);
+  transition: transform 0.16s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.yn-btn-emerald:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow:
+    0 14px 28px -10px rgba(53, 196, 106, 0.45),
+    inset 0 1px 0 rgba(125, 255, 155, 0.36);
+}
+
+.yn-btn-emerald:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -205,7 +385,12 @@ html {
   .animate-gold-sheen,
   .animate-luxury-float,
   .animate-ken-burns,
-  .animate-glitch-gold {
+  .animate-glitch-gold,
+  .animate-particle-drift,
+  .animate-streak-fall,
+  .yn-tricolor-bar,
+  .yn-tricolor-text,
+  .yn-tricolor-border::before {
     animation: none !important;
   }
 }

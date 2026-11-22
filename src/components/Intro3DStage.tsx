@@ -19,11 +19,13 @@ const _colorA = new THREE.Color();
 const _colorB = new THREE.Color();
 const _dummy = new THREE.Object3D();
 
-const COLOR_OBSIDIAN = 0x0b0b0d;
-const COLOR_IVORY_SAND = 0xf4ece0;
-const COLOR_GOLD = 0xd6a84f;
-const COLOR_CHAMPAGNE = 0xf3d999;
-const COLOR_BRONZE_GOLD = 0xa87a2a;
+const COLOR_OBSIDIAN = 0x071b16;
+const COLOR_IVORY_SAND = 0xfffdf8;
+const COLOR_GOLD = 0xff9933;
+const COLOR_CHAMPAGNE = 0xffd28a;
+const COLOR_BRONZE_GOLD = 0xe87516;
+const COLOR_EMERALD = 0x138808;
+const COLOR_LIGHT_GREEN = 0x35c46a;
 
 function detectSoftwareWebGL(renderer: THREE.WebGLRenderer): boolean {
   try {
@@ -79,8 +81,8 @@ function createStudioFloorTexture(isDark: boolean): THREE.CanvasTexture {
     const cx = size / 2;
     const cy = size / 2;
 
-    const ringStroke = isDark ? 'rgba(214, 168, 79, 0.34)' : 'rgba(138, 98, 28, 0.28)';
-    const accentStroke = isDark ? 'rgba(243, 217, 153, 0.26)' : 'rgba(18, 16, 12, 0.18)';
+    const ringStroke = isDark ? 'rgba(255, 153, 51, 0.36)' : 'rgba(232, 117, 22, 0.32)';
+    const accentStroke = isDark ? 'rgba(53, 196, 106, 0.28)' : 'rgba(7, 94, 54, 0.22)';
 
     [84, 136, 188, 234].forEach((r, idx) => {
       ctx.beginPath();
@@ -96,7 +98,7 @@ function createStudioFloorTexture(isDark: boolean): THREE.CanvasTexture {
     });
 
     ctx.setLineDash([]);
-    ctx.strokeStyle = isDark ? 'rgba(243, 217, 153, 0.22)' : 'rgba(138, 98, 28, 0.2)';
+    ctx.strokeStyle = isDark ? 'rgba(255, 253, 248, 0.22)' : 'rgba(24, 35, 30, 0.2)';
     ctx.lineWidth = 1;
     for (let i = 0; i < 16; i++) {
       const a = (i / 16) * Math.PI * 2;
@@ -327,9 +329,9 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
 
     const scene = new THREE.Scene();
     const isInitiallyDark = stateRef.current.theme === 'dark';
-    const fogColorDark = new THREE.Color(0x090807);
-    const fogColorLight = new THREE.Color(0xeaddc2);
-    scene.fog = new THREE.FogExp2(isInitiallyDark ? 0x090807 : 0xeaddc2, 0.068);
+    const fogColorDark = new THREE.Color(0x07130f);
+    const fogColorLight = new THREE.Color(0xe8edf2);
+    scene.fog = new THREE.FogExp2(isInitiallyDark ? 0x07130f : 0xe8edf2, 0.068);
 
     const camera = new THREE.PerspectiveCamera(38, initialW / initialH, 0.1, 40);
     camera.position.set(0.35, 1.32, 5.2);
@@ -345,18 +347,18 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
     controls.target.set(0, 0.1, 0);
     controls.update();
 
-    // Environment Map (PMREM + RoomEnvironment) for 24K metallic reflections
+    // Environment Map (PMREM + RoomEnvironment) for crisp metallic reflections
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     const roomEnv = new RoomEnvironment();
     const envTarget = pmremGenerator.fromScene(roomEnv, 0.04);
     scene.environment = envTarget.texture;
-    scene.environmentIntensity = isInitiallyDark ? 1.2 : 1.05;
+    scene.environmentIntensity = isInitiallyDark ? 1.15 : 1.02;
 
-    // 3-Point Warm Gold Desert Lighting
-    const hemiLight = new THREE.HemisphereLight(0xfff1cf, 0x2a2010, isInitiallyDark ? 0.72 : 1.05);
+    // 3-Point Darkened Tricolour Studio Lighting (Ivory Key, Saffron Fill, Emerald Rim)
+    const hemiLight = new THREE.HemisphereLight(0xfffdf8, 0x071b16, isInitiallyDark ? 0.76 : 1.05);
     scene.add(hemiLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffe9b8, 2.5);
+    const keyLight = new THREE.DirectionalLight(0xfff4df, 2.3);
     keyLight.position.set(3.8, 5.2, 4.2);
     keyLight.castShadow = !isSoftwareGl;
     keyLight.shadow.mapSize.set(1024, 1024);
@@ -369,11 +371,11 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
     keyLight.shadow.bias = -0.0005;
     scene.add(keyLight);
 
-    const goldFillLight = new THREE.PointLight(COLOR_CHAMPAGNE, 3.6, 12, 2);
+    const goldFillLight = new THREE.PointLight(COLOR_GOLD, 3.8, 12, 2);
     goldFillLight.position.set(-3.2, 2.2, 2.6);
     scene.add(goldFillLight);
 
-    const bronzeRimLight = new THREE.PointLight(COLOR_GOLD, 3.8, 12, 2);
+    const bronzeRimLight = new THREE.PointLight(COLOR_LIGHT_GREEN, 3.6, 12, 2);
     bronzeRimLight.position.set(3.1, 1.5, -2.5);
     scene.add(bronzeRimLight);
 
@@ -387,11 +389,11 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
       return item;
     };
 
-    // Sculptural Gold Desert Dunes Floor Terrain
+    // Sculptural Darkened Emerald-Slate Dunes Floor Terrain
     const duneGeo = track(createGoldDesertDuneGeometry());
     const duneMat = track(
       new THREE.MeshStandardMaterial({
-        color: isInitiallyDark ? 0x6b4d1b : 0xc59a4b,
+        color: isInitiallyDark ? 0x0b261d : 0xcddbd3,
         roughness: 0.78,
         metalness: 0.24,
       })
@@ -502,9 +504,9 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
 
     const houseShellMat = track(
       new THREE.MeshPhysicalMaterial({
-        color: 0x121215,
+        color: 0x101a17,
         roughness: 0.34,
-        metalness: 0.48,
+        metalness: 0.45,
         clearcoat: 0.72,
         clearcoatRoughness: 0.2,
       })
@@ -527,12 +529,12 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
     chimneyMesh.castShadow = true;
     pavilionGroup.add(chimneyMesh);
 
-    // Warm Golden Hearth Windows & Portal Doorway
+    // Warm Ivory-Saffron Hearth Windows & Portal Doorway
     const hearthMat = track(
       new THREE.MeshStandardMaterial({
         color: COLOR_IVORY_SAND,
         emissive: COLOR_GOLD,
-        emissiveIntensity: 1.35,
+        emissiveIntensity: 1.25,
         roughness: 0.18,
         metalness: 0.15,
       })
@@ -555,16 +557,16 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
     doorFrame.position.set(0, -0.34, 0.385);
     pavilionGroup.add(doorFrame);
 
-    // 3) Floating Amber-Gold Prism Beacon Crystal
+    // 3) Floating Tricolour Prism Beacon Crystal
     const beaconGroup = new THREE.Group();
     beaconGroup.position.set(0, 0.86, 0);
     heroRoot.add(beaconGroup);
 
     const crystalMat = track(
       new THREE.MeshPhysicalMaterial({
-        color: COLOR_CHAMPAGNE,
+        color: COLOR_IVORY_SAND,
         emissive: COLOR_GOLD,
-        emissiveIntensity: 0.42,
+        emissiveIntensity: 0.38,
         roughness: 0.08,
         metalness: 0.12,
         transmission: isSoftwareGl ? 0.35 : 0.78,
@@ -583,7 +585,7 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
     const coreMesh = new THREE.Mesh(coreGeo, goldMetalMat);
     beaconGroup.add(coreMesh);
 
-    // 4) Precision Craftsmanship Wrench & Antique Gold Gear
+    // 4) Precision Craftsmanship Wrench & Emerald Gear
     const craftGroup = new THREE.Group();
     craftGroup.position.set(0.84, 0.08, 0.34);
     heroRoot.add(craftGroup);
@@ -596,10 +598,10 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
 
     const gearMat = track(
       new THREE.MeshPhysicalMaterial({
-        color: COLOR_BRONZE_GOLD,
+        color: COLOR_EMERALD,
         roughness: 0.24,
-        metalness: 0.88,
-        clearcoat: 0.4,
+        metalness: 0.82,
+        clearcoat: 0.45,
       })
     );
     const gearGeo = track(createGearGeometry(10, 0.35, 0.26, 0.10));
@@ -608,7 +610,7 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
     gearMesh.castShadow = true;
     craftGroup.add(gearMesh);
 
-    // 5) Twin Gold Gyroscopic Orbit Rings + Champagne Satellites
+    // 5) Twin Saffron + Emerald Gyroscopic Orbit Rings + Ivory Satellites
     const orbitGroup = new THREE.Group();
     orbitGroup.position.y = 0.08;
     heroRoot.add(orbitGroup);
@@ -621,11 +623,11 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
 
     const innerOrbitMat = track(
       new THREE.MeshStandardMaterial({
-        color: COLOR_CHAMPAGNE,
-        emissive: COLOR_GOLD,
-        emissiveIntensity: 0.45,
+        color: COLOR_LIGHT_GREEN,
+        emissive: COLOR_EMERALD,
+        emissiveIntensity: 0.55,
         roughness: 0.22,
-        metalness: 0.86,
+        metalness: 0.82,
       })
     );
     const innerOrbitGeo = track(new THREE.TorusGeometry(1.16, 0.016, 14, 72));
@@ -641,9 +643,9 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
 
     const satBronzeMat = track(
       new THREE.MeshStandardMaterial({
-        color: COLOR_GOLD,
-        emissive: COLOR_CHAMPAGNE,
-        emissiveIntensity: 1.1,
+        color: COLOR_IVORY_SAND,
+        emissive: COLOR_LIGHT_GREEN,
+        emissiveIntensity: 1.0,
         roughness: 0.2,
         metalness: 0.5,
       })
@@ -652,16 +654,16 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
     satBronze.position.set(-1.16, 0, 0);
     innerOrbit.add(satBronze);
 
-    // 6) Instanced Golden Desert Sand Sparks (48 floating dust grains)
+    // 6) Instanced Saffron, Ivory & Emerald Sparks (48 floating dust grains)
     const sparkCount = 48;
     const sparkGeo = track(new THREE.OctahedronGeometry(0.024, 0));
     const sparkMat = track(
       new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        emissive: COLOR_GOLD,
-        emissiveIntensity: 0.95,
+        emissive: COLOR_CHAMPAGNE,
+        emissiveIntensity: 0.75,
         roughness: 0.2,
-        metalness: 0.78,
+        metalness: 0.72,
       })
     );
     const sparkInstanced = new THREE.InstancedMesh(sparkGeo, sparkMat, sparkCount);
@@ -675,8 +677,8 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
       sparkData.push({ angle, radius, yBase, speed, phase });
 
       if (i % 3 === 0) _colorA.setHex(COLOR_GOLD);
-      else if (i % 3 === 1) _colorA.setHex(COLOR_CHAMPAGNE);
-      else _colorA.setHex(COLOR_BRONZE_GOLD);
+      else if (i % 3 === 1) _colorA.setHex(COLOR_IVORY_SAND);
+      else _colorA.setHex(COLOR_LIGHT_GREEN);
       sparkInstanced.setColorAt(i, _colorA);
     }
     if (sparkInstanced.instanceColor) sparkInstanced.instanceColor.needsUpdate = true;
@@ -757,16 +759,16 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
       if (scene.fog instanceof THREE.FogExp2) {
         scene.fog.color.lerp(_colorA, 1 - Math.exp(-6 * dt));
       }
-      _colorB.setHex(isDark ? 0x6b4d1b : 0xc59a4b);
+      _colorB.setHex(isDark ? 0x0b261d : 0xcddbd3);
       duneMat.color.lerp(_colorB, 1 - Math.exp(-5 * dt));
 
       scene.environmentIntensity = THREE.MathUtils.damp(
         scene.environmentIntensity,
-        isDark ? 1.2 : 1.02,
+        isDark ? 1.15 : 1.02,
         5,
         dt
       );
-      hemiLight.intensity = THREE.MathUtils.damp(hemiLight.intensity, isDark ? 0.72 : 1.05, 5, dt);
+      hemiLight.intensity = THREE.MathUtils.damp(hemiLight.intensity, isDark ? 0.76 : 1.05, 5, dt);
       contactMat.opacity = THREE.MathUtils.damp(contactMat.opacity, isDark ? 0.85 : 0.45, 5, dt);
       const targetFloorTex = isDark ? floorTexDark : floorTexLight;
       if (floorRingMat.map !== targetFloorTex) {
@@ -776,10 +778,13 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
 
       const isTech = s.selectedRole === 'technician';
       const isSignUp = s.authMode === 'signup';
-      _colorB.setHex(isTech || isSignUp ? COLOR_GOLD : COLOR_CHAMPAGNE);
+      _colorB.setHex(isTech ? COLOR_LIGHT_GREEN : isSignUp ? COLOR_GOLD : COLOR_CHAMPAGNE);
       crystalMat.color.lerp(_colorB, 1 - Math.exp(-6 * dt));
       champagneGlowMat.color.lerp(_colorB, 1 - Math.exp(-6 * dt));
-      innerOrbitMat.color.lerp(_colorB, 1 - Math.exp(-6 * dt));
+      innerOrbitMat.color.lerp(
+        _colorB.setHex(isTech ? COLOR_GOLD : COLOR_LIGHT_GREEN),
+        1 - Math.exp(-6 * dt)
+      );
 
       s.impulse = THREE.MathUtils.damp(s.impulse, 0, 4.5, dt);
 
@@ -857,14 +862,14 @@ export const Intro3DStage: React.FC<Intro3DStageProps> = ({
 
   if (webglFailed) {
     return (
-      <div className="relative w-full h-full bg-[#08080A]">
+      <div className="relative w-full h-full bg-[#07130F]">
         <img
           src={fallbackPoster}
-          alt="Your Need — Luxury Gold Desert Home Services"
+          alt="Your Need — Darkened Tricolour Home Concierge"
           referrerPolicy="no-referrer"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-75"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#08080A]/80 via-transparent to-[#08080A]/95" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#07130F]/85 via-[#071B16]/45 to-[#07130F]/95" />
       </div>
     );
   }

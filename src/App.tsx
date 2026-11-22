@@ -42,6 +42,11 @@ import {
   ServiceDetailTarget,
 } from './components/AppServiceDetailScreen';
 import { TechnicianDashboardScreen } from './components/TechnicianDashboardScreen';
+import { BrandLogoMark, StartupLogoSplash } from './components/BrandLogo';
+import {
+  LiveNotificationBanner,
+  NotificationCenterDrawer,
+} from './components/NotificationCenter';
 import { PageTransitionLoader } from './components/PageTransitionLoader';
 import { AiRepairBotDrawer, HelpCenterModal } from './components/AssistantHelpWidgets';
 import { AuthGateModal } from './components/AuthGateModal';
@@ -90,10 +95,12 @@ import {
   advanceRepairJobStatus,
   approveJobQuote,
   cancelRepairJob,
+  createNotification,
   createRepairJobWithContact,
   fetchMyTechnicianProfile,
   fetchUserPrivateContact,
   fetchUserProfile,
+  markAllNotificationsRead,
   markNotificationRead,
   rejectRepairJob,
   reopenRejectedJob,
@@ -160,6 +167,7 @@ const STORAGE_CURRENCY_KEY = 'yourneed_currency';
 const STORAGE_LANG_KEY = 'yourneed_lang';
 const STORAGE_THEME_KEY = 'yourneed_theme';
 const STORAGE_SCROLLBAR_KEY = 'yourneed_scrollbars';
+const STORAGE_PUSH_NOTIFS_KEY = 'yourneed_push_notifs';
 
 export default function App() {
   // Region, Currency & Language State
@@ -214,7 +222,29 @@ export default function App() {
   const [myTechnicianJobs, setMyTechnicianJobs] = useState<RepairJob[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [localNotifications, setLocalNotifications] = useState<AppNotification[]>([]);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [liveBannerNotif, setLiveBannerNotif] = useState<AppNotification | null>(null);
+  const [messagesInitialTab, setMessagesInitialTab] = useState<'chats' | 'updates'>('chats');
+  const [pushNotifsEnabled, setPushNotifsEnabled] = useState<boolean>(() => {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem(STORAGE_PUSH_NOTIFS_KEY) !== 'disabled';
+    }
+    return true;
+  });
+  const [browserNotifPermission, setBrowserNotifPermission] = useState<
+    NotificationPermission | 'unsupported'
+  >(() =>
+    typeof window !== 'undefined' && 'Notification' in window
+      ? Notification.permission
+      : 'unsupported'
+  );
+  const seenNotifIdsRef = useRef<Set<string>>(new Set());
+  const notifHydratedRef = useRef<boolean>(false);
+  const pushNotifsEnabledRef = useRef<boolean>(pushNotifsEnabled);
+  useEffect(() => {
+    pushNotifsEnabledRef.current = pushNotifsEnabled;
+  }, [pushNotifsEnabled]);
 
   // Admin Collections
   const [adminUsers, setAdminUsers] = useState<UserProfile[]>([]);
@@ -264,6 +294,12 @@ export default function App() {
   };
 
   // Modals & Sheets
+  const [showStartupSplash, setShowStartupSplash] = useState<boolean>(
+    () => !detectAdminPortalRequest()
+  );
+  const [splashMinDone, setSplashMinDone] = useState<boolean>(
+    () => detectAdminPortalRequest()
+  );
   const [showIntro, setShowIntro] = useState<boolean>(() => !detectAdminPortalRequest());
   const [pageTransitioning, setPageTransitioning] = useState(false);
   const [heroFlipped, setHeroFlipped] = useState(false);
@@ -356,7 +392,7 @@ export default function App() {
     localStorage.setItem(STORAGE_THEME_KEY, theme);
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
-      metaTheme.setAttribute('content', isDark ? '#08080A' : '#171717');
+      metaTheme.setAttribute('content', isDark ? '#07130F' : '#075E36');
     }
   }, [theme]);
 
@@ -408,11 +444,76 @@ export default function App() {
     };
   }, [activeScreen, showIntro]);
 
+  useEffect(() => {
+    if (!showStartupSplash || splashMinDone) return;
+    const timer = window.setTimeout(() => setSplashMinDone(true), 1650);
+    return () => window.clearTimeout(timer);
+  }, [showStartupSplash, splashMinDone]);
+
+  useEffect(() => {
+    if (showStartupSplash && splashMinDone && authReady) {
+      setShowStartupSplash(false);
+    }
+  }, [showStartupSplash, splashMinDone, authReady]);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     window.setTimeout(() => {
       setToastMessage((prev) => (prev === msg ? null : prev));
     }, 4000);
+  };
+
+  const triggerBrowserNotification = (notif: AppNotification) => {
+    if (
+      typeof window === 'undefined' ||
+      !('Notification' in window) ||
+      Notification.permission !== 'granted' ||
+      !pushNotifsEnabledRef.current
+    ) {
+      return;
+    }
+    try {
+      const nativeNotif = new Notification(notif.title, {
+        body: notif.body,
+        icon: '/pwa-192x192.png',
+        tag: notif.id,
+      });
+      nativeNotif.onclick = () => {
+        window.focus();
+        nativeNotif.close();
+      };
+    } catch {
+      // Ignore environments that block Notification constructor directly
+    }
+  };
+
+  const showLiveAlert = (notif: AppNotification) => {
+    setLiveBannerNotif(notif);
+    triggerBrowserNotification(notif);
+    window.setTimeout(() => {
+      setLiveBannerNotif((prev) => (prev?.id === notif.id ? null : prev));
+    }, 6000);
+  };
+
+  const pushLocalNotification = (params: {
+    title: string;
+    body: string;
+    type?: AppNotification['type'];
+    jobId?: string;
+  }) => {
+    const item: AppNotification = {
+      id: `local_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      recipientId: authUser?.uid || 'guest',
+      senderId: 'system',
+      jobId: params.jobId || '',
+      title: params.title,
+      body: params.body,
+      type: params.type || 'system',
+      read: false,
+      createdAt: new Date(),
+    };
+    setLocalNotifications((prev) => [item, ...prev].slice(0, 20));
+    showLiveAlert(item);
   };
 
   // Startup connection check & public listeners
@@ -473,6 +574,18 @@ export default function App() {
           });
           resolvedProfile = await fetchUserProfile(user.uid);
           setUserProfile(resolvedProfile);
+          try {
+            await createNotification({
+              recipientId: user.uid,
+              senderId: user.uid,
+              jobId: '',
+              title: 'Welcome to Your Need Notifications',
+              body: 'Live repair booking updates, technician ETAs, quote approvals, and chat alerts will appear here.',
+              type: 'system',
+            });
+          } catch {
+            // Non-fatal welcome notification
+          }
           if (initialRole === 'technician' && !detectAdminPortalRequest()) {
             setActiveRoleView('technician');
           }
@@ -540,7 +653,11 @@ export default function App() {
 
   // User-specific Firestore subscriptions
   useEffect(() => {
-    if (!authUser) return;
+    if (!authUser) {
+      seenNotifIdsRef.current = new Set();
+      notifHydratedRef.current = false;
+      return;
+    }
     const unsubCust = subscribeCustomerJobs(authUser.uid, (jobs) => {
       setMyCustomerJobs(jobs);
     });
@@ -548,6 +665,18 @@ export default function App() {
       setMyTechnicianJobs(jobs);
     });
     const unsubNotifs = subscribeUserNotifications(authUser.uid, (items) => {
+      if (!notifHydratedRef.current) {
+        items.forEach((n) => seenNotifIdsRef.current.add(n.id));
+        notifHydratedRef.current = true;
+      } else {
+        const incomingNew = items.find(
+          (n) => !n.read && !seenNotifIdsRef.current.has(n.id)
+        );
+        items.forEach((n) => seenNotifIdsRef.current.add(n.id));
+        if (incomingNew) {
+          showLiveAlert(incomingNew);
+        }
+      }
       setNotifications(items);
     });
     return () => {
@@ -755,10 +884,115 @@ export default function App() {
     return reviews.filter((r) => r.technicianId === authUser.uid);
   }, [reviews, authUser]);
 
-  const unreadNotifCount = useMemo(
-    () => notifications.filter((n) => !n.read).length,
-    [notifications]
+  const mergedNotifications = useMemo(
+    () => [...notifications, ...localNotifications],
+    [notifications, localNotifications]
   );
+
+  const unreadNotifCount = useMemo(
+    () => mergedNotifications.filter((n) => !n.read).length,
+    [mergedNotifications]
+  );
+
+  const handleRequestPushPermission = async () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      setBrowserNotifPermission('unsupported');
+      showToast('In-app live notifications are active.');
+      return;
+    }
+    if (Notification.permission === 'granted') {
+      const next = !pushNotifsEnabled;
+      setPushNotifsEnabled(next);
+      try {
+        localStorage.setItem(STORAGE_PUSH_NOTIFS_KEY, next ? 'enabled' : 'disabled');
+      } catch {
+        // Ignore storage error
+      }
+      showToast(next ? 'Desktop & mobile push alerts enabled.' : 'Desktop push alerts paused (in-app alerts remain active).');
+      return;
+    }
+    if (Notification.permission === 'denied') {
+      setBrowserNotifPermission('denied');
+      showToast('Notifications are blocked in your browser site settings.');
+      return;
+    }
+    try {
+      const permission = await Notification.requestPermission();
+      setBrowserNotifPermission(permission);
+      if (permission === 'granted') {
+        setPushNotifsEnabled(true);
+        try {
+          localStorage.setItem(STORAGE_PUSH_NOTIFS_KEY, 'enabled');
+        } catch {
+          // Ignore storage error
+        }
+        pushLocalNotification({
+          title: 'Notifications Enabled',
+          body: 'You will now receive instant alerts for technician ETAs, quotes, and messages.',
+          type: 'system',
+        });
+      } else {
+        showToast('Browser permission declined. In-app alerts remain active.');
+      }
+    } catch {
+      showToast('Unable to request browser notification permission.');
+    }
+  };
+
+  const handleSendTestNotification = async () => {
+    if (authUser && authUser.emailVerified) {
+      try {
+        await createNotification({
+          recipientId: authUser.uid,
+          senderId: authUser.uid,
+          jobId: '',
+          title: 'Live Alert Check',
+          body: 'Your Need notifications are active and synced in real time.',
+          type: 'system',
+        });
+        return;
+      } catch {
+        // Fall through to local preview notification
+      }
+    }
+    pushLocalNotification({
+      title: 'Live Alert Preview',
+      body: 'Booking updates, technician arrival ETAs, and chat alerts will pop up just like this.',
+      type: 'booking',
+    });
+  };
+
+  const handleMarkAllNotificationsRead = async () => {
+    setLocalNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    const unreadRemoteIds = notifications.filter((n) => !n.read).map((n) => n.id);
+    if (unreadRemoteIds.length > 0) {
+      await markAllNotificationsRead(unreadRemoteIds);
+    }
+    showToast('All notifications marked as read.');
+  };
+
+  const handleNotificationClick = async (notif: AppNotification) => {
+    setNotifOpen(false);
+    setLiveBannerNotif(null);
+    if (notif.id.startsWith('local_')) {
+      setLocalNotifications((prev) =>
+        prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+      );
+    } else if (!notif.read) {
+      await markNotificationRead(notif.id);
+    }
+    if (notif.jobId) {
+      const found = [...myCustomerJobs, ...myTechnicianJobs, ...liveOpenJobs].find(
+        (j) => j.id === notif.jobId
+      );
+      if (found) {
+        setSelectedJob(found);
+        return;
+      }
+    }
+    setMessagesInitialTab('updates');
+    navigateTo('messages');
+  };
 
   // Handlers
   const handleApplyRegionLanguage = async (
@@ -1115,7 +1349,11 @@ export default function App() {
   const handleCancelJob = async (job: RepairJob, reason: string) => {
     setSubmitting(true);
     try {
-      await cancelRepairJob(job.id, reason);
+      await cancelRepairJob(job.id, reason, {
+        customerId: job.customerId,
+        technicianId: job.technicianId,
+        issueTitle: job.issueTitle,
+      });
       setSelectedJob(null);
       showToast('Repair request cancelled.');
     } finally {
@@ -1299,31 +1537,32 @@ export default function App() {
       <AmbientBackground />
       <div
         id="top"
-        className="relative z-10 min-h-[100dvh] flex bg-[#F6F3EC] dark:bg-[#080808] text-[#1B1915] dark:text-white transition-colors duration-200 overflow-x-clip"
+        className="relative z-10 min-h-[100dvh] flex bg-[#F8FAFC]/80 dark:bg-[#07130F]/80 text-[#18231E] dark:text-[#FFFDF8] transition-colors duration-200 overflow-x-clip"
       >
         {/* ----------------------------------------------------------------- */}
         {/* Desktop App Sidebar (Spacious Navigation Rail on lg+)             */}
         {/* ----------------------------------------------------------------- */}
-        <aside className="hidden lg:flex lg:flex-col lg:justify-between w-64 shrink-0 h-[100dvh] sticky top-0 bg-white dark:bg-[#141414] border-r border-black/[0.08] dark:border-white/[0.08] p-5 z-30">
-          <div className="space-y-6">
+        <aside className="hidden lg:flex lg:flex-col lg:justify-between w-72 shrink-0 h-[100dvh] sticky top-0 bg-[#FFFDF8]/92 dark:bg-[#071B16]/92 backdrop-blur-xl border-r border-[#075E36]/12 dark:border-white/[0.08] p-6 z-30 shadow-[6px_0_32px_-20px_rgba(7,27,22,0.4)]">
+          <div className="space-y-7">
             <button
               type="button"
               onClick={() => navigateTo('home')}
-              className="w-full text-left px-2 py-1 font-brand text-xl font-extrabold tracking-wide uppercase"
+              className="w-full text-left px-2.5 py-1.5 font-brand text-xl font-extrabold tracking-wide uppercase flex items-center gap-3"
             >
+              <BrandLogoMark size="sm" animated={true} interactive={true} />
               <LetterSweepBrand text={t('brand')} />
             </button>
 
             <button
               type="button"
               onClick={() => handleStartRequest(null, null)}
-              className="w-full min-h-[44px] px-4 rounded-xl bg-[#D6AE53] text-[#080808] text-xs font-bold hover:brightness-105 transition-all flex items-center justify-center gap-2"
+              className="w-full min-h-[48px] px-5 rounded-xl yn-btn-saffron text-xs sm:text-sm flex items-center justify-center gap-2.5"
             >
               <Plus className="w-4 h-4" />
               <span>Book a Service</span>
             </button>
 
-            <nav aria-label="Desktop app navigation" className="space-y-1">
+            <nav aria-label="Desktop app navigation" className="space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const active = activeNavTab === item.id;
@@ -1332,18 +1571,23 @@ export default function App() {
                     key={item.id}
                     type="button"
                     onClick={() => navigateTo(item.id)}
-                    className={`w-full min-h-[44px] px-3.5 rounded-xl text-sm font-semibold flex items-center justify-between transition-colors ${
+                    className={`w-full min-h-[46px] px-4 rounded-xl text-sm font-semibold flex items-center justify-between transition-all ${
                       active
-                        ? 'bg-[#D6AE53]/14 text-[#9E7628] dark:text-[#D6AE53]'
-                        : 'text-[#595959] dark:text-[#A0A0A0] hover:text-[#171717] dark:hover:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C]'
+                        ? 'bg-gradient-to-r from-[#FF9933]/18 via-[#FFFDF8]/10 to-[#35C46A]/14 border border-[#FF9933]/35 text-[#E87516] dark:text-[#FFD28A] shadow-sm'
+                        : 'text-[#4D5E57] dark:text-[#E8EDF2]/75 hover:text-[#18231E] dark:hover:text-[#FFFDF8] hover:bg-[#E8EDF2]/65 dark:hover:bg-[#101A17]'
                     }`}
                   >
-                    <span className="flex items-center gap-3">
-                      <Icon className="w-4 h-4 text-[#D6AE53]" strokeWidth={active ? 2.3 : 1.9} />
+                    <span className="flex items-center gap-3.5">
+                      <Icon
+                        className={`w-4 h-4 ${
+                          active ? 'text-[#E87516] dark:text-[#FF9933]' : 'text-[#075E36] dark:text-[#35C46A]'
+                        }`}
+                        strokeWidth={active ? 2.3 : 1.9}
+                      />
                       <span>{item.label}</span>
                     </span>
                     {item.badge ? (
-                      <span className="px-1.5 py-0.5 rounded-md bg-[#D6AE53] text-[#080808] text-[10px] font-bold tabular-nums">
+                      <span className="px-2 py-0.5 rounded-md bg-[#FF9933] text-[#07130F] text-[11px] font-bold tabular-nums">
                         {item.badge}
                       </span>
                     ) : null}
@@ -1352,8 +1596,8 @@ export default function App() {
               })}
             </nav>
 
-            <div className="pt-4 border-t border-black/[0.06] dark:border-white/[0.06] space-y-1">
-              <p className="px-3.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[#A0A0A0]">
+            <div className="pt-5 border-t border-[#075E36]/12 dark:border-white/[0.08] space-y-2">
+              <p className="px-4 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-[#4D5E57] dark:text-[#E8EDF2]/55">
                 Workspace
               </p>
               <button
@@ -1362,18 +1606,18 @@ export default function App() {
                   setActiveRoleView('technician');
                   navigateTo('technician_dashboard');
                 }}
-                className={`w-full min-h-[42px] px-3.5 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 transition-colors ${
+                className={`w-full min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-between gap-2.5 transition-all ${
                   activeScreen === 'technician_dashboard'
-                    ? 'bg-[#D6AE53]/14 text-[#9E7628] dark:text-[#D6AE53]'
-                    : 'text-[#595959] dark:text-[#A0A0A0] hover:text-[#171717] dark:hover:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C]'
+                    ? 'bg-[#138808]/16 border border-[#35C46A]/40 text-[#075E36] dark:text-[#7DFF9B]'
+                    : 'text-[#4D5E57] dark:text-[#E8EDF2]/75 hover:text-[#18231E] dark:hover:text-[#FFFDF8] hover:bg-[#E8EDF2]/65 dark:hover:bg-[#101A17]'
                 }`}
               >
-                <span className="flex items-center gap-3">
-                  <Wrench className="w-4 h-4 text-[#D6AE53]" />
+                <span className="flex items-center gap-3.5">
+                  <Wrench className="w-4 h-4 text-[#138808] dark:text-[#35C46A]" />
                   <span>Technician Dashboard</span>
                 </span>
                 {pendingRequestsForTech.length > 0 ? (
-                  <span className="px-1.5 py-0.5 rounded-md bg-[#D6AE53] text-[#080808] text-[10px] font-bold tabular-nums">
+                  <span className="px-2 py-0.5 rounded-md bg-[#138808] text-[#FFFDF8] text-[10px] font-bold tabular-nums">
                     {pendingRequestsForTech.length}
                   </span>
                 ) : null}
@@ -1382,50 +1626,50 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => navigateTo('settings')}
-                className={`w-full min-h-[42px] px-3.5 rounded-xl text-xs font-semibold flex items-center gap-3 transition-colors ${
+                className={`w-full min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-3.5 transition-all ${
                   activeScreen === 'settings'
-                    ? 'bg-[#D6AE53]/14 text-[#9E7628] dark:text-[#D6AE53]'
-                    : 'text-[#595959] dark:text-[#A0A0A0] hover:text-[#171717] dark:hover:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C]'
+                    ? 'bg-[#FF9933]/16 border border-[#FF9933]/35 text-[#E87516] dark:text-[#FFD28A]'
+                    : 'text-[#4D5E57] dark:text-[#E8EDF2]/75 hover:text-[#18231E] dark:hover:text-[#FFFDF8] hover:bg-[#E8EDF2]/65 dark:hover:bg-[#101A17]'
                 }`}
               >
-                <Settings className="w-4 h-4 text-[#D6AE53]" />
+                <Settings className="w-4 h-4 text-[#E87516] dark:text-[#FFB866]" />
                 <span>Settings</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setAiBotOpen(true)}
-                className="w-full min-h-[42px] px-3.5 rounded-xl text-xs font-semibold text-[#595959] dark:text-[#A0A0A0] hover:text-[#171717] dark:hover:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center gap-3 transition-colors"
+                className="w-full min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold text-[#4D5E57] dark:text-[#E8EDF2]/75 hover:text-[#18231E] dark:hover:text-[#FFFDF8] hover:bg-[#E8EDF2]/65 dark:hover:bg-[#101A17] flex items-center gap-3.5 transition-colors"
               >
-                <Bot className="w-4 h-4 text-[#D6AE53]" />
+                <Bot className="w-4 h-4 text-[#E87516] dark:text-[#FF9933]" />
                 <span>AI Concierge</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setHelpOpen(true)}
-                className="w-full min-h-[42px] px-3.5 rounded-xl text-xs font-semibold text-[#595959] dark:text-[#A0A0A0] hover:text-[#171717] dark:hover:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center gap-3 transition-colors"
+                className="w-full min-h-[44px] px-4 rounded-xl text-xs sm:text-sm font-semibold text-[#4D5E57] dark:text-[#E8EDF2]/75 hover:text-[#18231E] dark:hover:text-[#FFFDF8] hover:bg-[#E8EDF2]/65 dark:hover:bg-[#101A17] flex items-center gap-3.5 transition-colors"
               >
-                <HelpCircle className="w-4 h-4 text-[#D6AE53]" />
+                <HelpCircle className="w-4 h-4 text-[#075E36] dark:text-[#35C46A]" />
                 <span>Help &amp; Safety</span>
               </button>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-black/[0.06] dark:border-white/[0.06]">
+          <div className="pt-4 border-t border-[#075E36]/12 dark:border-white/[0.08]">
             <button
               type="button"
               onClick={() => (authUser ? navigateTo('profile') : navigateTo('auth'))}
-              className="w-full p-3 rounded-xl bg-[#F3EEE2] dark:bg-[#1C1C1C] text-left flex items-center gap-3 hover:opacity-95 transition-opacity"
+              className="w-full p-3 rounded-xl bg-[#E8EDF2]/75 dark:bg-[#101A17] border border-[#075E36]/10 dark:border-white/[0.08] text-left flex items-center gap-3 hover:border-[#FF9933]/40 transition-colors"
             >
-              <div className="w-9 h-9 rounded-xl bg-[#141414] border border-white/[0.1] text-[#D6AE53] text-xs font-bold flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-[#071B16] border border-[#FF9933]/40 text-[#FFD28A] text-xs font-bold flex items-center justify-center shrink-0">
                 {authUser ? (currentUserDisplay || 'M').slice(0, 2).toUpperCase() : <UserIcon className="w-4 h-4" />}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-semibold text-[#171717] dark:text-white truncate">
+                <p className="text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] truncate">
                   {authUser ? currentUserDisplay || 'Account' : 'Sign In / Register'}
                 </p>
-                <p className="text-[11px] text-[#A0A0A0] truncate">
+                <p className="text-[11px] text-[#4D5E57] dark:text-[#E8EDF2]/60 truncate">
                   {region.name} · {currencyCode}
                 </p>
               </div>
@@ -1436,35 +1680,49 @@ export default function App() {
         {/* ----------------------------------------------------------------- */}
         {/* Main App Workspace Column                                         */}
         {/* ----------------------------------------------------------------- */}
-        <div className="flex-1 min-w-0 flex flex-col pb-24 lg:pb-12">
-          {/* Compact, Uncluttered App Top Bar */}
-          <header className="sticky top-0 z-30 h-13 sm:h-14 bg-white/95 dark:bg-[#080808]/95 backdrop-blur-md border-b border-black/[0.08] dark:border-white/[0.08] px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex-1 min-w-0 flex flex-col pb-24 lg:pb-14">
+          {/* Compact, Frosted Tricolour App Top Bar */}
+          <header className="sticky top-0 z-30 h-16 bg-[#FFFDF8]/90 dark:bg-[#07130F]/92 backdrop-blur-xl border-b border-[#075E36]/10 dark:border-white/[0.08] px-5 sm:px-8 lg:px-10 flex items-center justify-between gap-4 relative">
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 bottom-0 h-[1.5px] yn-tricolor-bar opacity-55 pointer-events-none"
+            />
+            <div className="flex items-center gap-3 min-w-0">
               {isSubScreen ? (
                 <button
                   type="button"
                   onClick={() => navigateTo(previousScreen || 'home')}
                   aria-label="Go back"
-                  className="min-h-[40px] min-w-[40px] rounded-xl bg-[#F3EEE2] dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.08] flex items-center justify-center text-[#D6AE53] shrink-0"
+                  className="min-h-[42px] min-w-[42px] rounded-xl bg-[#E8EDF2] dark:bg-[#101A17] border border-[#075E36]/15 dark:border-[#FF9933]/30 flex items-center justify-center text-[#E87516] dark:text-[#FFB866] shrink-0"
                 >
                   <ArrowLeft className="w-4 h-4" />
                 </button>
-              ) : null}
-              <h1 className="font-brand text-base sm:text-lg font-bold tracking-wide uppercase truncate text-[#171717] dark:text-[#D6AE53]">
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => navigateTo('home')}
+                  aria-label="Your Need Home"
+                  className="lg:hidden shrink-0 rounded-full focus:outline-none"
+                >
+                  <BrandLogoMark size="xs" animated={true} interactive={true} />
+                </button>
+              )}
+              <h1 className="font-brand text-base sm:text-lg font-bold tracking-wide uppercase truncate yn-tricolor-text">
                 {screenTitleMap[activeScreen]}
               </h1>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
-                onClick={() => navigateTo('messages')}
-                aria-label="Messages and alerts"
-                className="relative min-h-[40px] min-w-[40px] rounded-xl bg-[#F3EEE2] dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.08] flex items-center justify-center text-[#171717] dark:text-white hover:border-[#D6AE53]/50 transition-colors"
+                onClick={() => setNotifOpen((v) => !v)}
+                aria-label="Open notifications"
+                aria-expanded={notifOpen}
+                className="relative min-h-[42px] min-w-[42px] rounded-xl bg-[#E8EDF2]/80 dark:bg-[#101A17] border border-[#075E36]/15 dark:border-white/[0.1] flex items-center justify-center text-[#18231E] dark:text-[#FFFDF8] hover:border-[#FF9933]/50 transition-colors"
               >
-                <Bell className="w-4 h-4 text-[#D6AE53]" />
+                <Bell className={`w-4 h-4 text-[#E87516] dark:text-[#FF9933] ${unreadNotifCount > 0 ? 'animate-pulse' : ''}`} />
                 {unreadNotifCount > 0 ? (
-                  <span className="absolute -top-1 -right-1 px-1.5 min-w-[18px] h-[18px] rounded-full bg-[#D6AE53] text-[#080808] text-[10px] font-bold flex items-center justify-center tabular-nums">
+                  <span className="absolute -top-1 -right-1 px-1.5 min-w-[18px] h-[18px] rounded-full bg-[#FF9933] text-[#07130F] text-[10px] font-bold flex items-center justify-center tabular-nums shadow-sm">
                     {unreadNotifCount}
                   </span>
                 ) : null}
@@ -1473,7 +1731,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => handleStartRequest(null, null)}
-                className="lg:hidden min-h-[40px] px-3.5 rounded-xl bg-[#D6AE53] text-[#080808] text-xs font-bold inline-flex items-center gap-1"
+                className="lg:hidden min-h-[42px] px-4 rounded-xl yn-btn-saffron text-xs inline-flex items-center gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Book</span>
@@ -1486,13 +1744,13 @@ export default function App() {
                   aria-label="More options"
                   aria-expanded={moreMenuOpen}
                   onClick={() => setMoreMenuOpen((v) => !v)}
-                  className="min-h-[40px] min-w-[40px] rounded-xl bg-[#F3EEE2] dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.08] flex items-center justify-center text-[#171717] dark:text-white hover:border-[#D6AE53]/50 transition-colors"
+                  className="min-h-[42px] min-w-[42px] rounded-xl bg-[#E8EDF2]/80 dark:bg-[#101A17] border border-[#075E36]/15 dark:border-white/[0.1] flex items-center justify-center text-[#18231E] dark:text-[#FFFDF8] hover:border-[#35C46A]/50 transition-colors"
                 >
-                  <MoreVertical className="w-4 h-4 text-[#A0A0A0]" />
+                  <MoreVertical className="w-4 h-4 text-[#4D5E57] dark:text-[#E8EDF2]/75" />
                 </button>
 
                 {moreMenuOpen ? (
-                  <div className="absolute right-0 mt-2 w-60 rounded-2xl bg-white dark:bg-[#141414] border border-black/[0.08] dark:border-white/[0.1] shadow-2xl p-1.5 z-50 space-y-0.5">
+                  <div className="absolute right-0 mt-2.5 w-64 rounded-2xl bg-[#FFFDF8] dark:bg-[#071B16] border border-[#075E36]/15 dark:border-[#FF9933]/25 shadow-2xl p-2 z-50 space-y-1 backdrop-blur-xl">
                     <button
                       type="button"
                       onClick={() => {
@@ -1500,14 +1758,14 @@ export default function App() {
                         setActiveRoleView('technician');
                         navigateTo('technician_dashboard');
                       }}
-                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#D6AE53] hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center justify-between gap-2"
+                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#075E36] dark:text-[#7DFF9B] hover:bg-[#E8EDF2] dark:hover:bg-[#101A17] flex items-center justify-between gap-2"
                     >
                       <span className="flex items-center gap-2.5">
-                        <Wrench className="w-4 h-4 text-[#D6AE53]" />
+                        <Wrench className="w-4 h-4 text-[#138808] dark:text-[#35C46A]" />
                         <span>Technician Dashboard</span>
                       </span>
                       {pendingRequestsForTech.length > 0 ? (
-                        <span className="px-1.5 py-0.5 rounded-md bg-[#D6AE53] text-[#080808] text-[10px] font-bold tabular-nums">
+                        <span className="px-1.5 py-0.5 rounded-md bg-[#138808] text-[#FFFDF8] text-[10px] font-bold tabular-nums">
                           {pendingRequestsForTech.length}
                         </span>
                       ) : null}
@@ -1520,9 +1778,9 @@ export default function App() {
                         setActiveRoleView('customer');
                         navigateTo('home');
                       }}
-                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#171717] dark:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center gap-2.5"
+                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] hover:bg-[#E8EDF2] dark:hover:bg-[#101A17] flex items-center gap-2.5"
                     >
-                      <Home className="w-4 h-4 text-[#D6AE53]" />
+                      <Home className="w-4 h-4 text-[#E87516] dark:text-[#FF9933]" />
                       <span>Customer Dashboard</span>
                     </button>
 
@@ -1532,9 +1790,9 @@ export default function App() {
                         setMoreMenuOpen(false);
                         setAiBotOpen(true);
                       }}
-                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#171717] dark:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center gap-2.5"
+                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] hover:bg-[#E8EDF2] dark:hover:bg-[#101A17] flex items-center gap-2.5"
                     >
-                      <Bot className="w-4 h-4 text-[#D6AE53]" />
+                      <Bot className="w-4 h-4 text-[#E87516] dark:text-[#FF9933]" />
                       <span>AI Service Concierge</span>
                     </button>
 
@@ -1544,13 +1802,13 @@ export default function App() {
                         setMoreMenuOpen(false);
                         setRegionModalOpen(true);
                       }}
-                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#171717] dark:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center justify-between gap-2"
+                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] hover:bg-[#E8EDF2] dark:hover:bg-[#101A17] flex items-center justify-between gap-2"
                     >
                       <span className="flex items-center gap-2.5">
-                        <Globe className="w-4 h-4 text-[#D6AE53]" />
+                        <Globe className="w-4 h-4 text-[#075E36] dark:text-[#35C46A]" />
                         <span>Region &amp; Currency</span>
                       </span>
-                      <span className="text-[11px] text-[#A0A0A0]">{currencyCode}</span>
+                      <span className="text-[11px] text-[#4D5E57] dark:text-[#E8EDF2]/65">{currencyCode}</span>
                     </button>
 
                     <button
@@ -1559,9 +1817,9 @@ export default function App() {
                         setMoreMenuOpen(false);
                         navigateTo('settings');
                       }}
-                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#171717] dark:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center gap-2.5"
+                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] hover:bg-[#E8EDF2] dark:hover:bg-[#101A17] flex items-center gap-2.5"
                     >
-                      <Settings className="w-4 h-4 text-[#D6AE53]" />
+                      <Settings className="w-4 h-4 text-[#E87516] dark:text-[#FFB866]" />
                       <span>Settings &amp; Preferences</span>
                     </button>
 
@@ -1571,13 +1829,13 @@ export default function App() {
                         toggleScrollbars();
                         setMoreMenuOpen(false);
                       }}
-                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#171717] dark:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center justify-between gap-2"
+                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] hover:bg-[#E8EDF2] dark:hover:bg-[#101A17] flex items-center justify-between gap-2"
                     >
                       <span className="flex items-center gap-2.5">
-                        <ArrowUpDown className="w-4 h-4 text-[#D6AE53]" />
+                        <ArrowUpDown className="w-4 h-4 text-[#075E36] dark:text-[#35C46A]" />
                         <span>Scrollbar Display</span>
                       </span>
-                      <span className="text-[11px] text-[#D6AE53]">
+                      <span className="text-[11px] text-[#E87516] dark:text-[#FFB866]">
                         {showScrollbars ? 'Visible' : 'Hidden'}
                       </span>
                     </button>
@@ -1588,9 +1846,9 @@ export default function App() {
                         setMoreMenuOpen(false);
                         setHelpOpen(true);
                       }}
-                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#171717] dark:text-white hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center gap-2.5"
+                      className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#18231E] dark:text-[#FFFDF8] hover:bg-[#E8EDF2] dark:hover:bg-[#101A17] flex items-center gap-2.5"
                     >
-                      <HelpCircle className="w-4 h-4 text-[#D6AE53]" />
+                      <HelpCircle className="w-4 h-4 text-[#075E36] dark:text-[#35C46A]" />
                       <span>Help &amp; Safety Policies</span>
                     </button>
 
@@ -1602,9 +1860,9 @@ export default function App() {
                           setActiveRoleView('admin');
                           navigateTo('bookings');
                         }}
-                        className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#D6AE53] hover:bg-[#F3EEE2] dark:hover:bg-[#1C1C1C] flex items-center gap-2.5 border-t border-black/[0.06] dark:border-white/[0.06] mt-1 pt-1"
+                        className="w-full min-h-[40px] px-3 rounded-xl text-left text-xs font-semibold text-[#E87516] dark:text-[#FFD28A] hover:bg-[#E8EDF2] dark:hover:bg-[#101A17] flex items-center gap-2.5 border-t border-[#075E36]/12 dark:border-white/[0.08] mt-1 pt-1"
                       >
-                        <Shield className="w-4 h-4 text-[#D6AE53]" />
+                        <Shield className="w-4 h-4 text-[#FF9933]" />
                         <span>Admin Directory Console</span>
                       </button>
                     ) : null}
@@ -1624,13 +1882,13 @@ export default function App() {
                 exit={{ opacity: 0, y: -14, scale: 0.96 }}
                 transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
                 role="status"
-                className="fixed top-16 right-4 left-4 sm:left-auto sm:w-96 z-40 rounded-2xl bg-[#141414] border border-[#D6AE53]/40 text-white px-4 py-3 text-sm shadow-xl flex items-center justify-between gap-3"
+                className="fixed top-16 right-4 left-4 sm:left-auto sm:w-96 z-40 rounded-2xl bg-[#071B16]/95 backdrop-blur-xl border border-[#FF9933]/40 text-[#FFFDF8] px-4 py-3 text-sm shadow-2xl flex items-center justify-between gap-3"
               >
                 <span>{toastMessage}</span>
                 <button
                   type="button"
                   onClick={() => setToastMessage(null)}
-                  className="text-[#D6AE53] hover:underline text-xs font-semibold shrink-0"
+                  className="text-[#FFB866] hover:underline text-xs font-semibold shrink-0"
                 >
                   Dismiss
                 </button>
@@ -1639,19 +1897,19 @@ export default function App() {
           </AnimatePresence>
 
           {/* Main Screen Container */}
-          <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8 space-y-6">
+          <main className="flex-1 w-full max-w-5xl mx-auto px-5 sm:px-8 lg:px-10 pt-8 pb-12 space-y-8">
             {/* Direct Admin Saved Directory Portal Access Guard */}
             {adminPortalRequested && !isAdmin ? (
               <section
                 aria-label="Admin Saved Directory Sign-In"
-                className="rounded-2xl border border-[#D6AE53]/45 bg-[#141414] text-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                className="rounded-2xl yn-tricolor-border bg-[#071B16]/95 text-[#FFFDF8] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl"
               >
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-[#D6AE53] text-xs font-bold uppercase tracking-wider">
-                    <Shield className="w-4 h-4" />
+                  <div className="flex items-center gap-2 text-[#FFB866] text-xs font-bold uppercase tracking-wider">
+                    <Shield className="w-4 h-4 text-[#FF9933]" />
                     <span>Admin Saved Directory Portal</span>
                   </div>
-                  <h2 className="text-base font-bold text-white font-display">
+                  <h2 className="text-base font-bold text-[#FFFDF8] font-display">
                     {!authUser
                       ? `Sign in as ${ADMIN_EMAIL} to view saved records`
                       : `Signed in as ${authUser.email} — Admin required`}
@@ -1663,7 +1921,7 @@ export default function App() {
                       type="button"
                       disabled={authLoading}
                       onClick={() => handleGoogleSignIn()}
-                      className="min-h-[42px] px-4 rounded-xl bg-[#D6AE53] text-[#080808] text-xs font-bold"
+                      className="min-h-[42px] px-4 rounded-xl yn-btn-saffron text-xs"
                     >
                       {authLoading ? 'Signing in...' : 'Sign In as Admin'}
                     </button>
@@ -1671,7 +1929,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={handleSignOut}
-                      className="min-h-[42px] px-4 rounded-xl bg-[#D6AE53] text-[#080808] text-xs font-bold"
+                      className="min-h-[42px] px-4 rounded-xl yn-btn-saffron text-xs"
                     >
                       Switch Account
                     </button>
@@ -1682,7 +1940,7 @@ export default function App() {
                       setAdminPortalRequested(false);
                       setActiveRoleView('customer');
                     }}
-                    className="min-h-[42px] px-3.5 rounded-xl bg-[#1C1C1C] text-xs font-semibold text-white"
+                    className="min-h-[42px] px-3.5 rounded-xl bg-[#101A17] border border-white/15 text-xs font-semibold text-[#FFFDF8]"
                   >
                     Dismiss
                   </button>
@@ -1926,7 +2184,9 @@ export default function App() {
                     currentName={currentUserDisplay || 'Member'}
                     myCustomerJobs={myCustomerJobs}
                     myTechnicianJobs={myTechnicianJobs}
-                    notifications={notifications}
+                    notifications={mergedNotifications}
+                    initialTab={messagesInitialTab}
+                    onMarkAllRead={handleMarkAllNotificationsRead}
                     onOpenJobDetail={(job) => setSelectedJob(job)}
                     onOpenAiAssistant={() => setAiBotOpen(true)}
                     onOpenAuth={(reason) => openAuthGate(reason)}
@@ -1989,11 +2249,14 @@ export default function App() {
                     languageNativeName={langOption.nativeName}
                     theme={theme}
                     showScrollbars={showScrollbars}
+                    pushNotifsEnabled={pushNotifsEnabled}
+                    browserNotifPermission={browserNotifPermission}
                     installLabel={t('installApp')}
                     onBack={() => navigateTo('profile')}
                     onOpenRegionModal={() => setRegionModalOpen(true)}
                     onToggleTheme={toggleTheme}
                     onToggleScrollbars={toggleScrollbars}
+                    onTogglePushNotifs={handleRequestPushPermission}
                     onOpenHelp={() => setHelpOpen(true)}
                   />
                 ) : null}
@@ -2034,7 +2297,7 @@ export default function App() {
                   });
                 }
               }}
-              className="fixed bottom-20 lg:bottom-6 right-4 z-30 min-h-[44px] min-w-[44px] px-3 rounded-full bg-[#141414]/95 border border-[#D6AE53]/50 text-[#D6AE53] shadow-xl backdrop-blur-md hover:bg-[#1C1C1C] hover:border-[#D6AE53] transition-colors flex items-center justify-center gap-1.5 text-xs font-semibold"
+              className="fixed bottom-20 lg:bottom-6 right-4 z-30 min-h-[44px] min-w-[44px] px-3 rounded-full bg-[#071B16]/95 border border-[#FF9933]/45 text-[#FFD28A] shadow-xl backdrop-blur-md hover:bg-[#101A17] hover:border-[#FF9933] transition-colors flex items-center justify-center gap-1.5 text-xs font-semibold"
             >
               {scrollState.scrolledDown ? (
                 <>
@@ -2054,9 +2317,9 @@ export default function App() {
         {/* Fixed 5-Tab Mobile Bottom Navigation Bar */}
         <nav
           aria-label="Mobile app navigation"
-          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#080808]/95 backdrop-blur-md border-t border-black/[0.08] dark:border-white/[0.08] pb-safe"
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FFFDF8]/95 dark:bg-[#07130F]/95 backdrop-blur-xl border-t border-[#075E36]/12 dark:border-white/[0.08] pb-safe px-1.5"
         >
-          <div className="grid grid-cols-5 h-14 items-center">
+          <div className="grid grid-cols-5 h-16 items-center gap-1">
             {navItems.map((tab) => {
               const Icon = tab.icon;
               const active = activeNavTab === tab.id;
@@ -2065,17 +2328,17 @@ export default function App() {
                   key={tab.id}
                   type="button"
                   onClick={() => navigateTo(tab.id)}
-                  className={`relative min-h-[44px] h-full flex flex-col items-center justify-center transition-colors ${
+                  className={`relative min-h-[48px] h-full flex flex-col items-center justify-center gap-1 transition-colors ${
                     active
-                      ? 'text-[#9E7628] dark:text-[#D6AE53]'
-                      : 'text-[#595959] dark:text-[#A0A0A0] hover:text-[#171717] dark:hover:text-white'
+                      ? 'text-[#E87516] dark:text-[#FF9933]'
+                      : 'text-[#4D5E57] dark:text-[#E8EDF2]/65 hover:text-[#18231E] dark:hover:text-[#FFFDF8]'
                   }`}
                 >
                   {active ? (
                     <motion.span
                       layoutId="mobile-tab-indicator"
                       transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-                      className="absolute top-0 w-9 h-0.5 rounded-full bg-[#D6AE53]"
+                      className="absolute top-0 w-10 h-0.5 rounded-full yn-tricolor-bar"
                     />
                   ) : null}
                   <div className="relative">
@@ -2086,12 +2349,12 @@ export default function App() {
                       <Icon className="w-5 h-5" strokeWidth={active ? 2.2 : 1.8} />
                     </motion.div>
                     {tab.badge ? (
-                      <span className="absolute -top-1 -right-2 px-1 min-w-[14px] h-[14px] rounded-full bg-[#D6AE53] text-[#080808] text-[9px] font-bold flex items-center justify-center tabular-nums">
+                      <span className="absolute -top-1.5 -right-2.5 px-1 min-w-[16px] h-[16px] rounded-full bg-[#FF9933] text-[#07130F] text-[9px] font-bold flex items-center justify-center tabular-nums shadow-sm">
                         {tab.badge}
                       </span>
                     ) : null}
                   </div>
-                  <span className="text-[10px] font-semibold tracking-tight mt-0.5 truncate max-w-full px-1">
+                  <span className="text-[11px] font-semibold tracking-tight truncate max-w-full px-1">
                     {tab.label}
                   </span>
                 </button>
@@ -2145,8 +2408,43 @@ export default function App() {
           }}
         />
 
+        <NotificationCenterDrawer
+          open={notifOpen}
+          isSignedIn={Boolean(authUser)}
+          notifications={mergedNotifications}
+          browserPermission={browserNotifPermission}
+          pushEnabled={pushNotifsEnabled}
+          onClose={() => setNotifOpen(false)}
+          onNotificationClick={handleNotificationClick}
+          onMarkAllRead={handleMarkAllNotificationsRead}
+          onRequestPushPermission={handleRequestPushPermission}
+          onSendTestNotification={handleSendTestNotification}
+          onOpenMessagesScreen={() => {
+            setMessagesInitialTab('updates');
+            navigateTo('messages');
+          }}
+          onOpenAuth={() =>
+            openAuthGate('Sign in with Google to receive live repair notifications.')
+          }
+        />
+
+        <LiveNotificationBanner
+          notification={liveBannerNotif}
+          onDismiss={() => setLiveBannerNotif(null)}
+          onOpen={handleNotificationClick}
+        />
+
+        <StartupLogoSplash
+          visible={showStartupSplash}
+          theme={theme}
+          onSkip={() => {
+            setSplashMinDone(true);
+            setShowStartupSplash(false);
+          }}
+        />
+
         <PageTransitionLoader
-          visible={!authReady || pageTransitioning}
+          visible={(!authReady && !showStartupSplash) || pageTransitioning}
           label={
             !authReady
               ? 'Connecting encrypted concierge session...'

@@ -109,7 +109,7 @@ export const Tilt3DCard: React.FC<Tilt3DCardProps> = ({
           className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 hover:opacity-100 transition-opacity duration-300"
           style={{
             background:
-              'radial-gradient(360px circle at var(--tilt-gx, 50%) var(--tilt-gy, 50%), rgba(214, 168, 79, 0.14), transparent 60%)',
+              'radial-gradient(360px circle at var(--tilt-gx, 50%) var(--tilt-gy, 50%), rgba(255, 153, 51, 0.14), rgba(53, 196, 106, 0.06) 45%, transparent 65%)',
           }}
         />
       ) : null}
@@ -244,7 +244,7 @@ export const CinematicImageFrame: React.FC<CinematicImageFrameProps> = ({
           </motion.div>
         ) : (
           onErrorFallback || (
-            <div className="w-full h-full bg-gradient-to-br from-[#FFFDF7] to-[#EFE5CC] dark:from-[#121215] dark:to-[#1C1912]" />
+            <div className="w-full h-full bg-gradient-to-br from-[#F8FAFC] to-[#E8EDF2] dark:from-[#071B16] dark:to-[#101A17]" />
           )
         )}
       </div>

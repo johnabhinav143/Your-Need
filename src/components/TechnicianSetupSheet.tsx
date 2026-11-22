@@ -213,7 +213,7 @@ export function TechnicianSetupSheet({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.16 }}
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#171717]/55 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#040B08]/75 backdrop-blur-md"
           role="dialog"
           aria-modal="true"
           aria-labelledby="tech-setup-title"
@@ -223,16 +223,16 @@ export function TechnicianSetupSheet({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 36, opacity: 0 }}
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full sm:max-w-xl bg-white dark:bg-[#171717] rounded-t-3xl sm:rounded-2xl border border-[#E8DFC8] dark:border-[#2E2E2E] shadow-xl max-h-[92vh] flex flex-col"
+            className="w-full sm:max-w-xl yn-glass-card yn-tricolor-border rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] flex flex-col"
           >
-            <div className="px-6 pt-3 pb-4 border-b border-[#EFE8D5] dark:border-[#2E2E2E] shrink-0">
-              <div className="w-10 h-1.5 bg-slate-300 dark:bg-[#262626] rounded-full mx-auto mb-3 sm:hidden" />
+            <div className="px-6 sm:px-7 pt-4 pb-5 border-b border-[#075E36]/12 dark:border-white/[0.08] shrink-0">
+              <div className="w-10 h-1.5 bg-[#075E36]/20 dark:bg-white/[0.15] rounded-full mx-auto mb-3.5 sm:hidden" />
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h2 id="tech-setup-title" className="text-lg font-semibold text-[#171717] dark:text-white">
+                  <h2 id="tech-setup-title" className="text-lg font-semibold text-[#18231E] dark:text-[#FFFDF8]">
                     {existingProfile ? 'Technician Profile & Verification' : 'Register as a Verified Technician'}
                   </h2>
-                  <p className="text-xs text-[#595959] dark:text-[#B5ADA0] mt-0.5">
+                  <p className="text-xs text-[#43564D] dark:text-[#9CB0A6] mt-0.5">
                     {region.name} ({currencyCode}) · Focus on a tight service zone for fast arrival
                   </p>
                 </div>
@@ -240,32 +240,32 @@ export function TechnicianSetupSheet({
                   type="button"
                   onClick={onClose}
                   aria-label="Close technician setup"
-                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#595959] dark:text-[#B5ADA0] hover:text-[#171717] dark:hover:text-white hover:bg-[#FFFDF7] dark:hover:bg-[#121212] transition-colors"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#43564D] dark:text-[#9CB0A6] hover:text-[#18231E] dark:hover:text-[#FFFDF8] hover:bg-[#FF9933]/10 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="overflow-y-auto px-6 py-5 space-y-5">
+            <form onSubmit={handleSubmit} className="overflow-y-auto px-6 sm:px-7 py-6 space-y-6">
               {/* Identity & Phone Verification Section */}
-              <div className="rounded-xl bg-[#FFFDF7] dark:bg-[#D6A84F]/15 border border-[#D6A84F]/40 dark:border-[#D6A84F]/35 p-4 space-y-3">
+              <div className="rounded-2xl bg-[#138808]/10 dark:bg-[#35C46A]/10 border border-[#35C46A]/35 p-5 space-y-4">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-[#171717] dark:text-[#D6A84F] flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-[#138808] dark:text-[#7DFF9B] flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4" />
                     <span>Phone &amp; Identity Verification</span>
                   </span>
                   {existingProfile?.verificationStatus === 'verified' ? (
-                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-lg bg-[#138808]/15 dark:bg-[#35C46A]/20 text-[#138808] dark:text-[#7DFF9B] flex items-center gap-1">
                       <BadgeCheck className="w-3.5 h-3.5" />
                       Verified Pro
                     </span>
                   ) : null}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="tech-phone" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                    <label htmlFor="tech-phone" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                       Contact phone ({region.dialCode})
                     </label>
                     <div className="flex gap-2">
@@ -280,15 +280,15 @@ export function TechnicianSetupSheet({
                           setPhoneVerified(false);
                         }}
                         placeholder={`${region.dialCode} 98765 43210`}
-                        className="flex-1 min-w-0 min-h-[42px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7]"
+                        className="flex-1 min-w-0 min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#35C46A]"
                       />
                       <button
                         type="button"
                         onClick={handleRequestOtp}
-                        className={`min-h-[42px] px-3 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-1 ${
+                        className={`min-h-[44px] px-3.5 rounded-xl text-xs font-semibold shrink-0 flex items-center gap-1.5 ${
                           phoneVerified
-                            ? 'bg-emerald-700 text-white'
-                            : 'bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717]'
+                            ? 'yn-btn-emerald text-white'
+                            : 'yn-btn-saffron text-white'
                         }`}
                       >
                         {phoneVerified ? <CheckCircle2 className="w-3.5 h-3.5" /> : <PhoneCall className="w-3.5 h-3.5" />}
@@ -298,7 +298,7 @@ export function TechnicianSetupSheet({
                   </div>
 
                   <div>
-                    <label htmlFor="tech-exp" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                    <label htmlFor="tech-exp" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                       Years of experience
                     </label>
                     <input
@@ -308,15 +308,15 @@ export function TechnicianSetupSheet({
                       max={60}
                       value={yearsExperience}
                       onChange={(e) => setYearsExperience(e.target.value)}
-                      className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7]"
+                      className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#35C46A]"
                     />
                   </div>
                 </div>
 
                 {otpRequested ? (
-                  <div className="rounded-xl bg-white dark:bg-[#171717] border border-[#D6A84F]/40 dark:border-[#D6A84F]/35 p-3 flex flex-col sm:flex-row sm:items-center gap-2.5">
-                    <span className="text-xs text-[#292929] dark:text-[#DDD6C7]">
-                      Verification code: <strong className="text-[#8F6412] dark:text-[#D6A84F]">{otpDemoCode}</strong>
+                  <div className="rounded-xl bg-[#FFFDF8] dark:bg-[#07130F] border border-[#FF9933]/40 p-3.5 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <span className="text-xs text-[#43564D] dark:text-[#9CB0A6]">
+                      Verification code: <strong className="text-[#E87516] dark:text-[#FFD28A]">{otpDemoCode}</strong>
                     </span>
                     <input
                       type="text"
@@ -324,28 +324,28 @@ export function TechnicianSetupSheet({
                       value={otpInput}
                       onChange={(e) => setOtpInput(e.target.value)}
                       placeholder="Enter 4-digit code"
-                      className="min-h-[38px] px-3 py-1 rounded-lg border border-[#D8CEB4] dark:border-[#292929] bg-slate-50 dark:bg-[#121212] text-xs tabular-nums"
+                      className="min-h-[42px] px-3.5 py-1.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#E8EDF2] dark:bg-[#071B16] text-xs tabular-nums text-[#18231E] dark:text-[#FFFDF8]"
                     />
                     <button
                       type="button"
                       onClick={handleConfirmOtp}
-                      className="min-h-[38px] px-3 py-1 rounded-lg bg-emerald-700 text-white text-xs font-semibold"
+                      className="min-h-[42px] px-4 py-1.5 rounded-xl yn-btn-emerald text-xs font-semibold"
                     >
                       Confirm Phone
                     </button>
                   </div>
                 ) : null}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="tech-id-type" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                    <label htmlFor="tech-id-type" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                       Government / Trade ID type
                     </label>
                     <select
                       id="tech-id-type"
                       value={idType}
                       onChange={(e) => setIdType(e.target.value)}
-                      className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-xs text-[#171717] dark:text-[#FFFDF7]"
+                      className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-xs sm:text-sm text-[#18231E] dark:text-[#FFFDF8]"
                     >
                       <option value="National ID / Aadhaar">National ID / Aadhaar</option>
                       <option value="Driver License">Driver License</option>
@@ -354,7 +354,7 @@ export function TechnicianSetupSheet({
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="tech-id-last4" className="block text-xs font-medium text-[#292929] dark:text-[#DDD6C7] mb-1">
+                    <label htmlFor="tech-id-last4" className="block text-xs font-medium text-[#43564D] dark:text-[#9CB0A6] mb-1.5">
                       Last 4 digits (for admin review)
                     </label>
                     <input
@@ -364,18 +364,18 @@ export function TechnicianSetupSheet({
                       value={idLast4}
                       onChange={(e) => setIdLast4(e.target.value)}
                       placeholder="e.g., 4821"
-                      className="w-full min-h-[42px] px-3 py-2 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7]"
+                      className="w-full min-h-[44px] px-3.5 py-2 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8]"
                     />
                   </div>
                 </div>
 
                 {existingProfile?.verificationStatus !== 'verified' ? (
-                  <label className="flex items-center gap-2 text-xs text-[#292929] dark:text-[#DDD6C7] cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs text-[#43564D] dark:text-[#9CB0A6] cursor-pointer">
                     <input
                       type="checkbox"
                       checked={requestVerification}
                       onChange={(e) => setRequestVerification(e.target.checked)}
-                      className="w-4 h-4 accent-[#D6A84F]"
+                      className="w-4 h-4 accent-[#138808]"
                     />
                     <span>Submit ID &amp; phone for admin Verified Pro review</span>
                   </label>
@@ -384,7 +384,7 @@ export function TechnicianSetupSheet({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="tech-name" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
+                  <label htmlFor="tech-name" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-1.5">
                     Your name / shop name
                   </label>
                   <input
@@ -395,12 +395,12 @@ export function TechnicianSetupSheet({
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     placeholder="e.g., Sam Electrical & AC"
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="tech-radius" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
+                  <label htmlFor="tech-radius" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-1.5">
                     Service radius (km)
                   </label>
                   <input
@@ -410,14 +410,14 @@ export function TechnicianSetupSheet({
                     max={100}
                     value={serviceRadiusKm}
                     onChange={(e) => setServiceRadiusKm(e.target.value)}
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="tech-area" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
+                  <label htmlFor="tech-area" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-1.5">
                     Primary service area (start focused)
                   </label>
                   <input
@@ -428,11 +428,11 @@ export function TechnicianSetupSheet({
                     value={neighborhood}
                     onChange={(e) => setNeighborhood(e.target.value)}
                     placeholder="e.g., Madhapur & Jubilee Hills"
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                   />
                 </div>
                 <div>
-                  <label htmlFor="tech-langs" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
+                  <label htmlFor="tech-langs" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-1.5">
                     Languages spoken
                   </label>
                   <input
@@ -442,16 +442,16 @@ export function TechnicianSetupSheet({
                     value={languagesText}
                     onChange={(e) => setLanguagesText(e.target.value)}
                     placeholder="English, Telugu, Hindi"
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
+                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-2">
+                <label className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2.5">
                   All repairs you handle
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   {CATEGORY_OPTIONS.map((item) => {
                     const selected = specialties.includes(item.label);
                     return (
@@ -459,10 +459,10 @@ export function TechnicianSetupSheet({
                         key={item.id}
                         type="button"
                         onClick={() => toggleSpecialty(item.label)}
-                        className={`min-h-[44px] px-3 py-2 rounded-xl border text-left text-xs transition-colors ${
+                        className={`min-h-[46px] px-3.5 py-2.5 rounded-xl border text-left text-xs transition-colors ${
                           selected
-                            ? 'bg-[#FFFDF7] dark:bg-[#D6A84F]/20 border-[#D6A84F] text-[#171717] dark:text-[#D6A84F] font-semibold'
-                            : 'bg-white dark:bg-[#121212]/90 border-[#E8DFC8] dark:border-[#2E2E2E] text-[#292929] dark:text-[#E8E2D5] hover:border-slate-300 dark:hover:border-slate-600'
+                            ? 'bg-[#FF9933]/14 border-[#FF9933] text-[#18231E] dark:text-[#FFD28A] font-semibold'
+                            : 'bg-[#FFFDF8] dark:bg-[#07130F]/90 border-[#075E36]/15 dark:border-white/[0.10] text-[#43564D] dark:text-[#E8EDF2] hover:border-[#FF9933]/40'
                         }`}
                       >
                         {item.shortLabel}
@@ -473,10 +473,10 @@ export function TechnicianSetupSheet({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-2">
+                <label className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2.5">
                   Payment methods you accept
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                   {PAYMENT_METHOD_OPTIONS.map((pm) => {
                     const selected = acceptedPayments.includes(pm.id);
                     return (
@@ -484,10 +484,10 @@ export function TechnicianSetupSheet({
                         key={pm.id}
                         type="button"
                         onClick={() => togglePayment(pm.id)}
-                        className={`min-h-[44px] px-3 py-2 rounded-xl border text-left text-xs transition-colors ${
+                        className={`min-h-[46px] px-3.5 py-2.5 rounded-xl border text-left text-xs transition-colors ${
                           selected
-                            ? 'bg-[#FFFDF7] dark:bg-[#D6A84F]/20 border-[#D6A84F] text-[#171717] dark:text-[#D6A84F] font-semibold'
-                            : 'bg-white dark:bg-[#121212]/90 border-[#E8DFC8] dark:border-[#2E2E2E] text-[#292929] dark:text-[#E8E2D5] hover:border-slate-300 dark:hover:border-slate-600'
+                            ? 'bg-[#138808]/14 dark:bg-[#35C46A]/15 border-[#35C46A] text-[#138808] dark:text-[#7DFF9B] font-semibold'
+                            : 'bg-[#FFFDF8] dark:bg-[#07130F]/90 border-[#075E36]/15 dark:border-white/[0.10] text-[#43564D] dark:text-[#E8EDF2] hover:border-[#35C46A]/40'
                         }`}
                       >
                         {pm.shortLabel}
@@ -499,7 +499,7 @@ export function TechnicianSetupSheet({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="tech-fee" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
+                  <label htmlFor="tech-fee" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2">
                     Inspection fee ({currencyCode})
                   </label>
                   <input
@@ -509,12 +509,12 @@ export function TechnicianSetupSheet({
                     max={10000000}
                     value={visitFee}
                     onChange={(e) => setVisitFee(e.target.value)}
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
+                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="tech-eta" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
+                  <label htmlFor="tech-eta" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2">
                     Typical arrival (mins)
                   </label>
                   <input
@@ -524,13 +524,13 @@ export function TechnicianSetupSheet({
                     max={240}
                     value={responseTimeMins}
                     onChange={(e) => setResponseTimeMins(e.target.value)}
-                    className="w-full min-h-[44px] px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm tabular-nums text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
+                    className="w-full min-h-[46px] px-4 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm tabular-nums text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="tech-bio" className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7] mb-1.5">
+                <label htmlFor="tech-bio" className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] mb-2">
                   Experience &amp; tools carried
                 </label>
                 <textarea
@@ -540,16 +540,16 @@ export function TechnicianSetupSheet({
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   placeholder="Mention years of experience, brands you service, and spare parts you keep on hand."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] bg-white dark:bg-[#121212] text-sm text-[#171717] dark:text-[#FFFDF7] focus:outline-none focus:ring-2 focus:ring-[#D6A84F]"
+                  className="w-full px-4 py-3 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] bg-[#FFFDF8] dark:bg-[#07130F] text-sm text-[#18231E] dark:text-[#FFFDF8] focus:outline-none focus:ring-2 focus:ring-[#FF9933]"
                 />
               </div>
 
-              <label className="flex items-center justify-between gap-4 p-3.5 rounded-xl bg-[#FFFDF7] dark:bg-[#0D0D0D]/75 border border-[#E8DFC8] dark:border-[#2E2E2E] cursor-pointer min-h-[52px]">
-                <div>
-                  <span className="block text-sm font-medium text-[#171717] dark:text-[#FFFDF7]">
+              <label className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-[#FFFDF8] dark:bg-[#07130F]/80 border border-[#075E36]/18 dark:border-white/[0.10] cursor-pointer min-h-[56px]">
+                <div className="space-y-0.5">
+                  <span className="block text-sm font-medium text-[#18231E] dark:text-[#FFFDF8]">
                     Available for immediate jobs
                   </span>
-                  <span className="block text-xs text-[#595959] dark:text-[#B5ADA0]">
+                  <span className="block text-xs text-[#43564D] dark:text-[#9CB0A6]">
                     Show your profile as Available Now to nearby homeowners
                   </span>
                 </div>
@@ -557,28 +557,28 @@ export function TechnicianSetupSheet({
                   type="checkbox"
                   checked={isAvailable}
                   onChange={(e) => setIsAvailable(e.target.checked)}
-                  className="w-5 h-5 accent-[#D6A84F] rounded"
+                  className="w-5 h-5 accent-[#138808] rounded"
                 />
               </label>
 
               {formError ? (
-                <div className="rounded-xl bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 px-4 py-3 text-sm text-rose-800 dark:text-rose-200">
+                <div className="rounded-xl bg-rose-500/15 border border-rose-500/30 px-4 py-3 text-sm text-rose-700 dark:text-rose-200">
                   {formError}
                 </div>
               ) : null}
 
-              <div className="pt-2 pb-2 flex items-center gap-3">
+              <div className="pt-2 pb-2 flex items-center gap-3.5">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="min-h-[48px] px-4 py-2.5 rounded-xl border border-[#D8CEB4] dark:border-[#292929] text-sm font-medium text-[#292929] dark:text-[#E8E2D5] hover:bg-[#FFFDF7] dark:hover:bg-[#121212] transition-colors"
+                  className="min-h-[50px] px-5 py-2.5 rounded-xl border border-[#075E36]/20 dark:border-white/[0.12] text-sm font-medium text-[#18231E] dark:text-[#FFFDF8] hover:bg-[#E8EDF2] dark:hover:bg-white/[0.06] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 min-h-[48px] px-5 py-2.5 rounded-xl bg-[#171717] dark:bg-[#D6A84F] text-white dark:text-[#171717] text-sm font-semibold hover:bg-[#262626] dark:hover:brightness-110 disabled:opacity-60 transition-colors"
+                  className="flex-1 min-h-[50px] px-5 py-2.5 rounded-xl yn-btn-emerald text-sm font-semibold disabled:opacity-60 transition-all"
                 >
                   {submitting ? 'Saving profile...' : 'Save Technician Profile'}
                 </button>
