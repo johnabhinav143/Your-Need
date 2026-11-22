@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import dotenv from 'dotenv';
-import express, { NextFunction, Request, Response } from 'express';
+import express from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import http from 'http';
 import path from 'path';
